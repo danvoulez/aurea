@@ -28,6 +28,7 @@ tracing-subscriber.workspace = true
 uuid.workspace = true
 
 aurea-core = { path = "../../crates/aurea-core" }
+aurea-artifacts-vcx-pack = { path = "../../crates/aurea-artifacts-vcx-pack" }
 aurea-plugins = { path = "../../crates/aurea-plugins" }
 aurea-policy = { path = "../../crates/aurea-policy" }
 aurea-receipts = { path = "../../crates/aurea-receipts" }

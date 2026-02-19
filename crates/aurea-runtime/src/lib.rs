@@ -4,7 +4,8 @@ use std::time::Duration;
 
 use anyhow::{Context, Result, anyhow};
 use aurea_core::{
-    PolicyEntry, Receipt, ReceiptSignature, UnsignedReceipt, WorkStatus, WorkUnit, cid_for,
+    ArtifactRef, PolicyEntry, Receipt, ReceiptSignature, UnsignedReceipt, WorkStatus, WorkUnit,
+    cid_for,
 };
 use aurea_plugins::PluginRegistry;
 use aurea_storage::{EnqueueResult, QueuedJob, RedbStore};
@@ -14,9 +15,19 @@ use chrono::{DateTime, Utc};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tokio::sync::broadcast;
 use tracing::{debug, error};
 use uuid::Uuid;
+
+struct ReceiptBuild {
+    status: WorkStatus,
+    policy_trace: Vec<PolicyEntry>,
+    artifacts: Vec<ArtifactRef>,
+    ttft_ms: u64,
+    ttr_ms: u64,
+    created_at: DateTime<Utc>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StreamEvent {
@@ -199,9 +210,9 @@ impl Runtime {
         });
 
         let execute_result = self.execute_job(&job).await;
-        let (status, detail) = match execute_result {
-            Ok(()) => (WorkStatus::Done, None),
-            Err(err) => (WorkStatus::Fail, Some(err.to_string())),
+        let (status, detail, artifacts) = match execute_result {
+            Ok(artifacts) => (WorkStatus::Done, None, artifacts),
+            Err(err) => (WorkStatus::Fail, Some(err.to_string()), Vec::new()),
         };
 
         let mut policy_trace = extract_policy_trace(&job.work.payload);
@@ -225,7 +236,17 @@ impl Runtime {
         let ttft_ms = (assigned_at - job.accepted_at).num_milliseconds().max(0) as u64;
         let ttr_ms = (done_at - job.accepted_at).num_milliseconds().max(0) as u64;
 
-        let receipt = self.sign_receipt(&job, status, policy_trace, ttft_ms, ttr_ms, done_at)?;
+        let receipt = self.sign_receipt(
+            &job,
+            ReceiptBuild {
+                status,
+                policy_trace,
+                artifacts,
+                ttft_ms,
+                ttr_ms,
+                created_at: done_at,
+            },
+        )?;
         self.store.put_receipt(&receipt)?;
         self.store.complete_leased(job.seq)?;
         self.store.observe_timings(ttft_ms, ttr_ms)?;
@@ -244,25 +265,17 @@ impl Runtime {
         Ok(())
     }
 
-    async fn execute_job(&self, job: &QueuedJob) -> Result<()> {
+    async fn execute_job(&self, job: &QueuedJob) -> Result<Vec<ArtifactRef>> {
         let plugin_name = job.work.topic.split(':').next().unwrap_or("echo");
         let plugin = self
             .plugins
             .get(plugin_name)
             .ok_or_else(|| anyhow!("plugin not found: {plugin_name}"))?;
-        let _ = plugin.execute(job.work.payload.clone()).await?;
-        Ok(())
+        let result = plugin.execute(job.work.payload.clone()).await?;
+        extract_artifacts(&result)
     }
 
-    fn sign_receipt(
-        &self,
-        job: &QueuedJob,
-        status: WorkStatus,
-        policy_trace: Vec<PolicyEntry>,
-        ttft_ms: u64,
-        ttr_ms: u64,
-        created_at: DateTime<Utc>,
-    ) -> Result<Receipt> {
+    fn sign_receipt(&self, job: &QueuedJob, build: ReceiptBuild) -> Result<Receipt> {
         let idem_key = job
             .work
             .idem_key
@@ -271,20 +284,20 @@ impl Runtime {
         let plan_hash = extract_plan_hash(&job.work.payload).unwrap_or(job.work.plan_hash()?);
 
         let mut stage_time_ms = BTreeMap::new();
-        stage_time_ms.insert("ttft_ms".to_string(), ttft_ms);
-        stage_time_ms.insert("ttr_ms".to_string(), ttr_ms);
+        stage_time_ms.insert("ttft_ms".to_string(), build.ttft_ms);
+        stage_time_ms.insert("ttr_ms".to_string(), build.ttr_ms);
 
         let unsigned = UnsignedReceipt {
             work_id: job.work.id,
             tenant: job.work.tenant.clone(),
             topic: job.work.topic.clone(),
-            status,
+            status: build.status,
             idem_key,
             plan_hash,
-            policy_trace,
+            policy_trace: build.policy_trace,
             stage_time_ms,
-            artifacts: vec![],
-            created_at,
+            artifacts: build.artifacts,
+            created_at: build.created_at,
         };
 
         let cid = cid_for(&unsigned)?;
@@ -416,6 +429,45 @@ fn extract_plan_hash(payload: &serde_json::Value) -> Option<String> {
         .and_then(|v| v.get("plan_hash"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
+}
+
+fn extract_artifacts(result: &serde_json::Value) -> Result<Vec<ArtifactRef>> {
+    let Some(items) = result.get("artifacts") else {
+        return Ok(Vec::new());
+    };
+    let Value::Array(items) = items else {
+        return Err(anyhow!("plugin result field `artifacts` must be an array"));
+    };
+
+    let mut out = Vec::with_capacity(items.len());
+    for (idx, item) in items.iter().enumerate() {
+        let Value::Object(map) = item else {
+            return Err(anyhow!("plugin artifacts[{idx}] must be an object"));
+        };
+
+        let cid = map
+            .get("cid")
+            .and_then(Value::as_str)
+            .ok_or_else(|| anyhow!("plugin artifacts[{idx}].cid missing"))?
+            .to_string();
+        let path = map
+            .get("path")
+            .and_then(Value::as_str)
+            .ok_or_else(|| anyhow!("plugin artifacts[{idx}].path missing"))?
+            .to_string();
+        let size_bytes = map
+            .get("size_bytes")
+            .and_then(Value::as_u64)
+            .ok_or_else(|| anyhow!("plugin artifacts[{idx}].size_bytes missing"))?;
+
+        out.push(ArtifactRef {
+            cid,
+            path,
+            size_bytes,
+        });
+    }
+
+    Ok(out)
 }
 
 #[derive(Debug, Clone)]

@@ -4,6 +4,7 @@
 - `GET /v1/stream?topic=…` — SSE de estados
 - `GET /v1/receipts/{cid}` — retorna Receipt
 - `POST /v1/verify/receipt` — verifica assinatura
+- `POST /v1/verify/pack` — verifica VCX-PACK (header/index/trailer/hashes)
 - `GET /v1/metrics` — Prometheus
 - `POST /v1/export` — Parquet/Arrow/RO-Crate
 

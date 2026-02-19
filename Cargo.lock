@@ -252,6 +252,7 @@ dependencies = [
  "arrow-ipc",
  "arrow-schema",
  "async-stream",
+ "aurea-artifacts-vcx-pack",
  "aurea-core",
  "aurea-plugins",
  "aurea-policy",
@@ -278,10 +279,14 @@ dependencies = [
 name = "aurea-artifacts-vcx-pack"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "aurea-core",
  "blake3",
+ "chrono",
  "serde",
  "serde_json",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
@@ -303,8 +308,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "aurea-artifacts-vcx-pack",
  "aurea-core",
+ "base64",
  "serde_json",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]

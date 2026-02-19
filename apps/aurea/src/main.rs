@@ -11,8 +11,9 @@ use arrow_array::{ArrayRef, RecordBatch, StringArray, UInt64Array};
 use arrow_ipc::writer::FileWriter as ArrowFileWriter;
 use arrow_schema::{DataType, Field, Schema};
 use async_stream::stream;
+use aurea_artifacts_vcx_pack::verify as verify_pack_file;
 use aurea_core::{Receipt, WorkStatus, WorkUnit, cid_of, to_nrf_bytes};
-use aurea_plugins::{EchoPlugin, PluginRegistry};
+use aurea_plugins::{EchoPlugin, PluginRegistry, VcxWorkerPlugin};
 use aurea_policy::{DefaultPolicy, Policy, PolicyEntry as PolicyTraceEntry, Route};
 use aurea_receipts::anchor_day;
 use aurea_runtime::{AcceptDisposition, ReceiptVerification, Runtime, RuntimeMetrics};
@@ -151,6 +152,23 @@ struct VerifyReceiptResponse {
     key_revoked: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     key_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reason: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct VerifyPackRequest {
+    path: String,
+    pack_cid: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct VerifyPackResponse {
+    ok: bool,
+    path: String,
+    entries: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pack_cid: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     reason: Option<String>,
 }
@@ -388,6 +406,7 @@ async fn run_server(listen: String, db: String, keys_dir: String) -> Result<()> 
     let store = RedbStore::open(&db)?;
     let mut plugins = PluginRegistry::new();
     plugins.register(EchoPlugin);
+    plugins.register(VcxWorkerPlugin);
 
     let (kid, signing_key, keyring) = load_or_create_key_material(Path::new(&keys_dir))?;
     let runtime = Runtime::new_with_signer(store, plugins, signing_key, kid);
@@ -408,6 +427,7 @@ async fn run_server(listen: String, db: String, keys_dir: String) -> Result<()> 
         .route("/v1/stream", get(stream_events))
         .route("/v1/receipts/{cid}", get(get_receipt))
         .route("/v1/verify/receipt", post(verify_receipt))
+        .route("/v1/verify/pack", post(verify_pack))
         .route("/v1/anchors/{day}", get(anchor_for_day))
         .route("/v1/metrics", get(metrics))
         .route("/v1/export", post(export_data))
@@ -666,6 +686,54 @@ async fn verify_receipt(
         key_policy,
         &receipt.signature.kid,
     )))
+}
+
+async fn verify_pack(
+    Json(req): Json<VerifyPackRequest>,
+) -> Result<Json<VerifyPackResponse>, (StatusCode, Json<Value>)> {
+    let pack_path = PathBuf::from(&req.path);
+    let check = verify_pack_file(&pack_path).map_err(internal_error)?;
+
+    if !check.ok {
+        return Err((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            api_error(
+                "ARTIFACT_VERIFY_FAIL",
+                "vcx-pack verification failed",
+                Some(json!({
+                    "path": req.path,
+                    "pack_cid": check.pack_cid,
+                    "entries": check.entries,
+                    "reason": check.reason,
+                })),
+            ),
+        ));
+    }
+
+    if let Some(expected_cid) = req.pack_cid.as_deref()
+        && check.pack_cid.as_deref() != Some(expected_cid)
+    {
+        return Err((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            api_error(
+                "ARTIFACT_VERIFY_FAIL",
+                "pack cid mismatch",
+                Some(json!({
+                    "path": req.path,
+                    "expected_cid": expected_cid,
+                    "actual_cid": check.pack_cid,
+                })),
+            ),
+        ));
+    }
+
+    Ok(Json(VerifyPackResponse {
+        ok: true,
+        path: req.path,
+        entries: check.entries,
+        pack_cid: check.pack_cid,
+        reason: None,
+    }))
 }
 
 fn map_verification(
@@ -994,30 +1062,52 @@ fn write_rocrate_export(dir: &Path, receipts: &[Receipt]) -> Result<()> {
     fs::write(&receipts_path, receipts_content)
         .with_context(|| format!("write ro-crate receipts: {receipts_path:?}"))?;
 
+    let mut has_parts = vec![json!({"@id": receipts_name})];
+    let mut artifact_nodes = Vec::new();
+    let mut artifact_index = 0usize;
+    for receipt in receipts {
+        for artifact in &receipt.artifacts {
+            artifact_index += 1;
+            let artifact_id = format!("artifact-{artifact_index}");
+            has_parts.push(json!({"@id": artifact_id}));
+            artifact_nodes.push(json!({
+                "@id": artifact_id,
+                "@type": "File",
+                "name": artifact.path,
+                "description": "VCX-PACK artifact reference from receipt",
+                "contentSize": artifact.size_bytes,
+                "identifier": format!("cid:{}", artifact.cid),
+            }));
+        }
+    }
+
+    let mut graph = vec![
+        json!({
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+            "about": {"@id": "./"}
+        }),
+        json!({
+            "@id": "./",
+            "@type": "Dataset",
+            "name": "AUREA Export RO-Crate",
+            "datePublished": generated_at,
+            "hasPart": has_parts
+        }),
+        json!({
+            "@id": receipts_name,
+            "@type": "File",
+            "encodingFormat": "application/json",
+            "description": "AUREA receipts snapshot for audit/replay",
+            "contentSize": fs::metadata(&receipts_path).map(|m| m.len()).unwrap_or(0),
+        }),
+    ];
+    graph.extend(artifact_nodes);
+
     let metadata = json!({
         "@context": "https://w3id.org/ro/crate/1.1/context",
-        "@graph": [
-            {
-                "@id": "ro-crate-metadata.json",
-                "@type": "CreativeWork",
-                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
-                "about": {"@id": "./"}
-            },
-            {
-                "@id": "./",
-                "@type": "Dataset",
-                "name": "AUREA Export RO-Crate",
-                "datePublished": generated_at,
-                "hasPart": [{"@id": receipts_name}]
-            },
-            {
-                "@id": receipts_name,
-                "@type": "File",
-                "encodingFormat": "application/json",
-                "description": "AUREA receipts snapshot for audit/replay",
-                "contentSize": fs::metadata(&receipts_path).map(|m| m.len()).unwrap_or(0),
-            }
-        ]
+        "@graph": graph
     });
 
     let metadata_path = dir.join("ro-crate-metadata.json");
@@ -1730,6 +1820,44 @@ mod tests {
         write_rocrate_export(&dir, &[]).expect("write ro-crate");
         assert!(dir.join("ro-crate-metadata.json").exists());
         assert!(dir.join("receipts.json").exists());
+        let _ = std::fs::remove_file(dir.join("ro-crate-metadata.json"));
+        let _ = std::fs::remove_file(dir.join("receipts.json"));
+        let _ = std::fs::remove_dir(dir);
+    }
+
+    #[test]
+    fn rocrate_export_includes_artifact_nodes() {
+        let dir = std::env::temp_dir().join(format!("aurea-rocrate-test-{}", Uuid::new_v4()));
+        let receipt = Receipt {
+            cid: "rcpt1".to_string(),
+            work_id: Uuid::new_v4(),
+            tenant: "tenant".to_string(),
+            topic: "vcx:commit".to_string(),
+            status: WorkStatus::Done,
+            idem_key: "idem".to_string(),
+            plan_hash: "plan".to_string(),
+            policy_trace: vec![],
+            stage_time_ms: std::collections::BTreeMap::new(),
+            artifacts: vec![aurea_core::ArtifactRef {
+                cid: "packcid".to_string(),
+                path: "./packs/sample.vcxpack".to_string(),
+                size_bytes: 123,
+            }],
+            created_at: Utc::now(),
+            signature: aurea_core::ReceiptSignature {
+                alg: "ed25519".to_string(),
+                kid: "k1".to_string(),
+                public_key: "pk".to_string(),
+                signature: "sig".to_string(),
+            },
+        };
+
+        write_rocrate_export(&dir, &[receipt]).expect("write ro-crate");
+        let metadata =
+            std::fs::read_to_string(dir.join("ro-crate-metadata.json")).expect("read metadata");
+        assert!(metadata.contains("artifact-1"));
+        assert!(metadata.contains("cid:packcid"));
+
         let _ = std::fs::remove_file(dir.join("ro-crate-metadata.json"));
         let _ = std::fs::remove_file(dir.join("receipts.json"));
         let _ = std::fs::remove_dir(dir);
