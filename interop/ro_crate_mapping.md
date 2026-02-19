@@ -8,6 +8,8 @@
 - Dataset raiz (`@id: "./"`) com `name`, `datePublished` e `hasPart`
 - Parte principal:
   - `receipts.json` com snapshot dos recibos exportados
+- Se `receipt.artifacts[]` existir:
+  - adiciona nós `File` (`artifact-N`) com `identifier=cid:<pack_cid>` e `contentSize`
 - Metadado obrigatório:
   - `ro-crate-metadata.json` com `conformsTo: https://w3id.org/ro/crate/1.1`
 
