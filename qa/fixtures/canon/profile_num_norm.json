@@ -1,0 +1,13 @@
+[
+  {
+    "profile": {
+      "null_strip": false,
+      "num_norm": "strict"
+    },
+    "in": {
+      "x": 1.0,
+      "y": -0.0
+    },
+    "out": "{\"x\":1,\"y\":0}"
+  }
+]

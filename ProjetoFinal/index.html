@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Projeto Final - AUREA Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Projeto Final";
+        var mkdocs_page_input_path = "ProjetoFinal.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> AUREA Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Projeto Final</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#0-sumario-executivo">0) Sumário executivo</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-objetivos-e-resultados">1) Objetivos e resultados</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-escopo">2) Escopo</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-arquitetura-enxuta">3) Arquitetura (enxuta)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#31-componentes">3.1 Componentes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#32-fluxo-de-alto-nivel">3.2 Fluxo de alto nível</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-contratos-de-dados">4) Contratos de dados</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#41-tipos-principais-rust-json-schema">4.1 Tipos principais (Rust → JSON Schema)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#42-versionamento-e-interoperabilidade">4.2 Versionamento e interoperabilidade</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-api-e-protocolo">5) API e protocolo</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#51-http3-quic-e-sse">5.1 HTTP/3 (QUIC) e SSE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#52-quic-workersout-of-proc">5.2 QUIC (workers/out-of-proc)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-policies-compile-time-auditaveis">6) Policies (compile-time, auditáveis)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-vcx-pack-artefatos">7) VCX-PACK (artefatos)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-determinismo-e-reprodutibilidade">8) Determinismo e reprodutibilidade</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-observabilidade-e-forense">9) Observabilidade e forense</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#10-ui-pwa-axum-leptos">10) UI PWA (Axum + Leptos)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#11-seguranca-e-conformidade">11) Segurança e conformidade</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#12-roadmap-90-dias">12) Roadmap (90 dias)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#m1-fundacao-1-binario-d0d15">M1 — Fundação 1-binário (D0–D15)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#m2-recibos-fortes-vcx-d16d35">M2 — Recibos fortes + VCX (D16–D35)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#m3-dominios-d36d65">M3 — Domínios (D36–D65)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#m4-operacao-critica-e-sre-d66d90">M4 — Operação crítica e SRE (D66–D90)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#13-criterios-de-aceite">13) Critérios de aceite</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#14-riscos-mitigacoes">14) Riscos &amp; mitigações</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#15-implantacao-e-operacao">15) Implantação e operação</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#16-testes-e-validacao">16) Testes e validação</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#17-governanca-e-licenca">17) Governança e licença</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#18-entregaveis">18) Entregáveis</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#19-exemplo-de-contrato-e-handler">19) Exemplo de contrato e handler</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#20-plano-de-adocao">20) Plano de adoção</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pronto-para-construcao">Pronto para construção</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prompt">Prompt:</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#response">Response:</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#padrao-operador-conversacional-oc">Padrão: Operador Conversacional (OC)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#fases-de-fora-parece-um-chat-por-dentro-e-uma-esteira">Fases (de fora parece “um chat”, por dentro é uma esteira)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#como-isso-esconde-complexidade-com-seguranca">Como isso “esconde” complexidade (com segurança)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#contratos-minimos-exemplos">Contratos mínimos (exemplos)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ux-no-chat-uma-timeline-zero-atrito">UX no chat (uma timeline, zero atrito)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#exemplos-por-dominio">Exemplos por domínio</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#vcx">VCX</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ciencia-reprodutivel">Ciência reprodutível</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#hdl">HDL</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#controles-que-mantem-tudo-livre-mas-seguro">Controles que mantêm tudo “livre, mas seguro”</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#como-integrar-no-aurea-agora">Como integrar no ÁUREA agora</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ganhos-praticos">Ganhos práticos</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#prompt_1">Prompt:</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#response_1">Response:</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../charter/project_charter/">Charter</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../sow/statement_of_work/">SoW</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../prd/prd/">PRD</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Architecture</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/apis/">APIs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/oc_spec/">OC Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../architecture/error_codes/">Errors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../ux/plan_card_spec/">PlanCard</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ux/microcopy/">Microcopy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ux/checklist_pr10/">Checklist PR-10</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../security/security_privacy/">Security</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Runbook</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../runbook/operations/">Operations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../runbook/incidents/">Incidents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../runbook/backup_restore/">Backup/Restore</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../qa/strategy/">QA</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../qa/canon_fixtures/">QA Canon Fixtures</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../slo/slis_slos/">SLO</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Interop</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../interop/ro_crate_mapping/">Mapping</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../interop/data_refs/">Data Refs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../interop/ro_crate_examples/">Examples</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../governance/contributing/">Governance</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">AUREA Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Projeto Final</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="aurea-projeto-final">ÁUREA — Projeto Final</h1>
+<p><strong>Plataforma 100% Rust para Ciência Reprodutível, VCX, Protótipos de Silício e Operação Crítica</strong></p>
+<hr />
+<h2 id="0-sumario-executivo">0) Sumário executivo</h2>
+<p>ÁUREA é uma plataforma unificada, tipada e verificável para execução de trabalhos críticos com <strong>determinismo</strong>, <strong>recibos fortes</strong> e <strong>artefatos portáveis</strong>. Implementada integralmente em Rust, combina um <strong>bus de jobs</strong> com <strong>políticas auditáveis</strong>, <strong>plugins nativos/WASI</strong>, empacotamento universal <strong>VCX-PACK</strong> e <strong>UI PWA</strong>. O desenho minimiza componentes e round-trips: <strong>um binário</strong> principal serve API+UI, gerencia fila/leases, assina recibos e expõe métricas; workers rodam <strong>in-proc</strong> por padrão e <strong>out-of-proc</strong>/QUIC quando necessário.</p>
+<hr />
+<h2 id="1-objetivos-e-resultados">1) Objetivos e resultados</h2>
+<ul>
+<li><strong>Determinismo e reprodutibilidade</strong>: replay bit-a-bit via seeds, clocks fixos, canonical JSON e KATs.</li>
+<li><strong>Auditabilidade forte</strong>: recibos com NRF/CID, <code>policy_trace</code>, tempos por etapa e assinaturas ed25519.</li>
+<li><strong>Tipagem ponta-a-ponta</strong>: contratos Rust → JSON Schema → validação de payloads/results → UI auto-gerada.</li>
+<li><strong>Operação crítica</strong>: quotas rígidas, PII/local-only, janelas, DUAL_CONTROL, âncoras Merkle.</li>
+<li><strong>Portabilidade de artefatos</strong>: VCX-PACK com manifesto/índices/hashes/verify.</li>
+<li><strong>TCO baixo</strong>: tudo Rust, sem SaaS de cola; um binário opera API, fila e observabilidade.</li>
+</ul>
+<hr />
+<h2 id="2-escopo">2) Escopo</h2>
+<p>Domínios de primeira classe:</p>
+<ol>
+<li><strong>Ciência reprodutível</strong> (WASI/bin, KATs).</li>
+<li><strong>VCX</strong> (imagem/áudio/vídeo, AV1, tempos por etapa).</li>
+<li><strong>HDL</strong> (geração Rust→HDL, simulação determinística, VCD).</li>
+<li><strong>Operadores semânticos</strong> (Text→JSON schema-driven; RAG tipado).</li>
+</ol>
+<hr />
+<h2 id="3-arquitetura-enxuta">3) Arquitetura (enxuta)</h2>
+<h3 id="31-componentes">3.1 Componentes</h3>
+<ul>
+<li><strong>aurea-bin</strong> (único binário)<ul>
+<li><strong>API/Bus</strong>: HTTP/3 (QUIC) + HTTP/1.1 fallback; SSE para stream.</li>
+<li><strong>UI PWA</strong> (Axum + Leptos): forms e viewers gerados por schema.</li>
+<li><strong>Fila/Leases</strong>: <code>redb</code> ACID; reassign automático.</li>
+<li><strong>Policies</strong>: funções puras compiladas; <code>policy_trace</code> no recibo.</li>
+<li><strong>Assinaturas</strong>: ed25519 (chaves geridas pelo serviço; <code>kid</code> rotativo).</li>
+<li><strong>Observabilidade</strong>: Prometheus + exports Arrow/Parquet; âncoras Merkle diárias.</li>
+</ul>
+</li>
+<li><strong>Plugins</strong> (in-proc por padrão; WASI/out-of-proc via QUIC quando requerido):<ul>
+<li><code>exp_runner</code>, <code>exp_ingest</code>, <code>vcx_worker</code>, <code>hdl_codegen</code>, <code>hdl_sim</code>, <code>op_llm_json</code>, <code>op_rag</code>, <code>notify</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="32-fluxo-de-alto-nivel">3.2 Fluxo de alto nível</h3>
+<ol>
+<li>Cliente envia <code>WorkUnit&lt;T&gt;</code> → API valida schema/idempotência → <strong>accepted</strong>.</li>
+<li>Scheduler aplica policies → enfileira → adquire lease → despacha handler (plugin).</li>
+<li>Handler emite <strong>progress</strong> (tempos por etapa), produz artefatos (VCX-PACK), retorna <strong>result</strong>.</li>
+<li>Serviço gera <strong>Receipt</strong> (hashes, trace, tempos), <strong>assina</strong> e ancora (Merkle opcional).</li>
+<li>Cliente acompanha por stream e consulta recibos via <code>/v1/receipts/{cid}</code>.</li>
+</ol>
+<hr />
+<h2 id="4-contratos-de-dados">4) Contratos de dados</h2>
+<h3 id="41-tipos-principais-rust-json-schema">4.1 Tipos principais (Rust → JSON Schema)</h3>
+<ul>
+<li><code>WorkUnit&lt;T&gt;</code>; <code>WorkResult&lt;R&gt;</code>; <code>Receipt</code>; <code>Metrics</code>; <code>Signature</code>; <code>PolicyEntry</code>; <code>ArtifactRef</code>.</li>
+<li><strong>NRF/CID</strong>: <code>cid = blake3(canonical_json(value))</code>.</li>
+<li><strong>Idempotência</strong>: <code>(tenant, topic, idem_key)</code>; se ausente, <code>idem_key = blake3(payload_canon)</code>.</li>
+</ul>
+<h3 id="42-versionamento-e-interoperabilidade">4.2 Versionamento e interoperabilidade</h3>
+<ul>
+<li><code>@type</code>, <code>@id (uuid)</code>, <code>@ver</code>, <code>@world</code>.</li>
+<li><code>schema_id</code>/<code>schema_v</code> gravados no recibo; <strong>semver estrito</strong>; Schemas publicados pelo serviço.</li>
+</ul>
+<hr />
+<h2 id="5-api-e-protocolo">5) API e protocolo</h2>
+<h3 id="51-http3-quic-e-sse">5.1 HTTP/3 (QUIC) e SSE</h3>
+<ul>
+<li><code>POST /v1/work</code> → enfileira <code>WorkUnit&lt;T&gt;</code>; responde <code>{status, receipt_cid}</code>.</li>
+<li><code>GET /v1/stream?topic=...&amp;tenant=...&amp;id=...</code> (SSE) → eventos <code>accepted|assigned|progress|done|error</code>.</li>
+<li><code>GET /v1/receipts/{cid}</code> → <code>Receipt</code>.</li>
+<li><code>GET /v1/schema/{schema_id}/{v}</code> → JSON Schema.</li>
+<li><code>POST /v1/verify/pack</code> → valida VCX-PACK (hashes/manifest/entries).</li>
+<li><code>GET /v1/metrics</code> (Prometheus).</li>
+<li><code>POST /v1/export?format=parquet|arrow</code> → dump incremental.</li>
+</ul>
+<h3 id="52-quic-workersout-of-proc">5.2 QUIC (workers/out-of-proc)</h3>
+<p>Frames (bidi stream):</p>
+<ul>
+<li><code>worker.hello{worker_id, capacity, capabilities[]}</code></li>
+<li><code>job.assign{work_unit}</code> / <code>job.progress{stage, t_ms}</code> / <code>job.result{result}</code> / <code>job.fail{err}</code></li>
+<li><code>job.heartbeat{lease_id}</code></li>
+</ul>
+<p>Leases:</p>
+<ul>
+<li>Tabelas <code>ready(topic)</code>, <code>leased(topic)</code> com <code>lease_ttl_ms</code>. Reassign em expiração.</li>
+</ul>
+<hr />
+<h2 id="6-policies-compile-time-auditaveis">6) Policies (compile-time, auditáveis)</h2>
+<p>Trait:</p>
+<pre><code class="language-rust">pub trait Policy {
+  fn evaluate(&amp;self, work: &amp;WorkUnit&lt;serde_json::Value&gt;) -&gt; Decision;
+}
+pub struct Decision { pub route: Route, pub budgets: Quotas, pub trace: Vec&lt;PolicyEntry&gt; }
+</code></pre>
+<p>Exemplos:</p>
+<ul>
+<li><code>quotas_chat</code>: <code>topic.starts_with("chat:")</code> → <code>tokens&lt;=4000</code>.</li>
+<li><code>pii_local</code>: <code>pii_detected(payload)</code> → <code>route(LocalOnly)</code>.</li>
+<li><code>commitment</code>: <code>topic.ends_with(":commit")</code> → <code>require(DUAL_CONTROL)</code>.</li>
+</ul>
+<p><code>policy_trace</code> sempre gravado em <code>Receipt</code>.</p>
+<hr />
+<h2 id="7-vcx-pack-artefatos">7) VCX-PACK (artefatos)</h2>
+<ul>
+<li><strong>Formato</strong>: manifesto + índice + trailer; entradas com <code>path</code>, <code>sha</code>, <code>size</code>.</li>
+<li><strong>CID do pack</strong>: <code>blake3(manifest_json)</code>.</li>
+<li><strong>Lifecycle integrado</strong>: runtime expõe <code>pack_begin/pack_add/pack_close</code> e preenche <code>receipt.artifacts[]</code>.</li>
+<li><strong>Verify</strong>: endpoint/CLI valida offsets, hashes e consistência.</li>
+</ul>
+<hr />
+<h2 id="8-determinismo-e-reprodutibilidade">8) Determinismo e reprodutibilidade</h2>
+<ul>
+<li>Seeds fixos, TZ=UTC, relógios simulados quando necessário.</li>
+<li>Canonical JSON p/ hashing e idempotência.</li>
+<li><strong>KATs</strong>: ingest/compare outputs com packs de referência.</li>
+<li>Isolamento de rede (policies) e versões travadas de libs.</li>
+</ul>
+<hr />
+<h2 id="9-observabilidade-e-forense">9) Observabilidade e forense</h2>
+<ul>
+<li>Métricas: <code>ttft_ms</code>, <code>ttr_ms</code>, <code>queue_depth</code>, <code>reassigns</code>, <code>error_rate</code>, <code>stage_time_ms{stage}</code>.</li>
+<li>Exports Parquet/Arrow + DataFusion para análises.</li>
+<li><strong>Âncoras Merkle diárias</strong> dos recibos (root publicado em log/arquivo).</li>
+</ul>
+<hr />
+<h2 id="10-ui-pwa-axum-leptos">10) UI PWA (Axum + Leptos)</h2>
+<ul>
+<li><strong>Auto-forms</strong> a partir de JSON Schema dos contratos.</li>
+<li>Lista/Detalhe de Jobs e <strong>📜 Recibo</strong> com <code>policy_trace</code>, hashes, tempos, artefatos (download/verify).</li>
+<li><strong>Replay</strong>: botão que reenvia <code>WorkUnit</code> original (ou simula via VCX-PACK/seed).</li>
+</ul>
+<hr />
+<h2 id="11-seguranca-e-conformidade">11) Segurança e conformidade</h2>
+<ul>
+<li>Assinaturas <strong>ed25519</strong> on-by-default; rotação de chaves (<code>kid</code>).</li>
+<li>Políticas para PII/local-only e DUAL_CONTROL em tópicos sensíveis.</li>
+<li>Logs rotacionados; controle de retenção; snapshots periódicos.</li>
+</ul>
+<hr />
+<h2 id="12-roadmap-90-dias">12) Roadmap (90 dias)</h2>
+<h3 id="m1-fundacao-1-binario-d0d15">M1 — Fundação 1-binário (D0–D15)</h3>
+<ul>
+<li><code>aurea serve</code> (HTTP/3+SSE), redb, fila/leases, idempotência por hash, schemas publicados, UI base.</li>
+</ul>
+<h3 id="m2-recibos-fortes-vcx-d16d35">M2 — Recibos fortes + VCX (D16–D35)</h3>
+<ul>
+<li>Assinatura ed25519; tempos por etapa; VCX-PACK integrado + verify; UI “📜 Recibo”.</li>
+</ul>
+<h3 id="m3-dominios-d36d65">M3 — Domínios (D36–D65)</h3>
+<ul>
+<li><code>exp_runner</code>/<code>exp_ingest</code> (WASI/bin) + KATs;</li>
+<li><code>vcx_worker</code> (resize→AV1→pack) com tempos;</li>
+<li><code>hdl_codegen</code>/<code>hdl_sim</code> (VCD, asserts) e packs.</li>
+</ul>
+<h3 id="m4-operacao-critica-e-sre-d66d90">M4 — Operação crítica e SRE (D66–D90)</h3>
+<ul>
+<li>Policies duras (PII/local-only, DUAL_CONTROL, janelas);</li>
+<li>Métricas Prometheus, exports Parquet/Arrow; caos/staging; âncoras Merkle.</li>
+</ul>
+<hr />
+<h2 id="13-criterios-de-aceite">13) Critérios de aceite</h2>
+<ul>
+<li><strong>Determinismo (Ciência/HDL)</strong>: replay reproduz artefatos byte-a-byte (hashes idênticos).</li>
+<li><strong>VCX</strong>: pipelines com tempos por etapa no recibo; <code>verify()</code> OK do pack.</li>
+<li><strong>Semânticos</strong>: Text→JSON válido no 1º ou 2º reparo; schema registrado no recibo.</li>
+<li><strong>Operação crítica</strong>: SLOs (TTFT p95 ≤ 4s; TTR p95 ≤ 9s); reassign no lease expirado; DUAL_CONTROL efetivo.</li>
+<li><strong>UI</strong>: PWA instalável; stream estável; “📜 Recibo” completo.</li>
+<li><strong>Assinaturas</strong>: todos recibos assinados; rotação de <code>kid</code> validável.</li>
+</ul>
+<hr />
+<h2 id="14-riscos-mitigacoes">14) Riscos &amp; mitigações</h2>
+<ul>
+<li><strong>AV1 CPU</strong>: presets ajustáveis; kernels wgpu para filtros; paralelização por GOP.</li>
+<li><strong>Determinismo de libs</strong>: trave de versões; seeds; KATs regulares; modo “no network”.</li>
+<li><strong>QUIC atrás de proxies</strong>: fallback WS/443; keep-alive agressivo.</li>
+<li><strong>Crescimento de estado</strong>: retenção configurável; snapshots Parquet/Arrow; âncoras Merkle.</li>
+</ul>
+<hr />
+<h2 id="15-implantacao-e-operacao">15) Implantação e operação</h2>
+<ul>
+<li><strong>Single binary</strong>: <code>aurea serve --db ./aurea.redb --listen 0.0.0.0:8080</code>.</li>
+<li><strong>Chaves</strong>: diretório <code>keys/</code> com <code>kid</code> atual e históricos; rotação diária/semanal.</li>
+<li><strong>Config</strong>: TOML com policies, quotas, janelas e roteamento de tópicos.</li>
+<li><strong>Backup</strong>: <code>redb</code> + snapshots de recibos/artefatos; exports periódicos Parquet/Arrow.</li>
+</ul>
+<hr />
+<h2 id="16-testes-e-validacao">16) Testes e validação</h2>
+<ul>
+<li>Unit/integration para contratos, hashing canônico, idempotência e leases.</li>
+<li>KATs por domínio (ciência, VCX, HDL) com packs fixos.</li>
+<li>Fuzz/proptest para HDL sob <code>feature=verify</code>.</li>
+<li>Chaos em staging (latência/falhas controladas, reassign validado).</li>
+</ul>
+<hr />
+<h2 id="17-governanca-e-licenca">17) Governança e licença</h2>
+<ul>
+<li><strong>Apache-2.0</strong> para núcleo e plugins oficiais.</li>
+<li>Plugins privados por domínio podem viver fora (respeitando contrato).</li>
+<li><strong>Semver estrito</strong>; <code>schema_id/v</code> carimbado em recibos; <strong>sem versões mágicas</strong>.</li>
+</ul>
+<hr />
+<h2 id="18-entregaveis">18) Entregáveis</h2>
+<ul>
+<li>Binário <code>aurea</code> (serve/worker/pack).</li>
+<li>Crates: <code>core</code>, <code>storage</code>, <code>runtime</code>, <code>artifacts/vcx_pack</code>, <code>plugins/*</code>.</li>
+<li>UI PWA integrada.</li>
+<li>Documentação de API/Schema, guias de operação e de compliance.</li>
+<li>Conjunto de KATs e packs de referência.</li>
+</ul>
+<hr />
+<h2 id="19-exemplo-de-contrato-e-handler">19) Exemplo de contrato e handler</h2>
+<pre><code class="language-rust">// Contrato
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct VcxSpec { pub ops: Vec&lt;VcxOp&gt; }
+
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(tag=&quot;op&quot;, rename_all=&quot;snake_case&quot;)]
+pub enum VcxOp { Resize{w:u32,h:u32}, EncodeAv1{preset:u8} }
+
+// Handler
+#[work(topic=&quot;vcx:graph&quot;)]
+fn vcx_graph(spec: VcxSpec, ctx: Ctx) -&gt; anyhow::Result&lt;VcxResult&gt; {
+    let mut pack = ctx.pack_begin(&quot;vcx-output&quot;)?;
+    let t0 = ctx.stage_start(&quot;resize&quot;);
+    let img = resize(spec, ctx.inputs())?;
+    ctx.stage_end(&quot;resize&quot;, t0);
+
+    let t1 = ctx.stage_start(&quot;encode_av1&quot;);
+    let av1 = encode_av1(img, spec)?;
+    ctx.stage_end(&quot;encode_av1&quot;, t1);
+
+    pack.add(&quot;out/video.ivf&quot;, &amp;av1)?;
+    let pack_cid = ctx.pack_close(pack)?;
+    Ok(VcxResult{ pack_cid })
+}
+</code></pre>
+<hr />
+<h2 id="20-plano-de-adocao">20) Plano de adoção</h2>
+<ol>
+<li><strong>Lab piloto</strong> com ciência reprodutível e VCX simples.</li>
+<li>Expandir para HDL com VCD/netlists e KATs.</li>
+<li>Adicionar operadores semânticos com schemas de domínio.</li>
+<li>Ativar policies duras e âncoras em produção.</li>
+</ol>
+<hr />
+<h3 id="pronto-para-construcao">Pronto para construção</h3>
+<p>O esqueleto inicial já está disponível e compilável. Próxima ação recomendada: implementar <strong>M1</strong> (idempotência por hash, leases redb, UI forms por schema) no binário único e habilitar <strong>assinatura de recibos</strong>. Isso libera fluxos reais de ciência/VCX/HDL com rastreabilidade completa.</p>
+<h2 id="prompt">Prompt:</h2>
+<p>Se o operador for um LLM que conversa com o humano e confirma ações, conseguimos por mais complexidade "dentro" pra ficar com ux humana mais livre?</p>
+<h2 id="response">Response:</h2>
+<p>Thought for 5s</p>
+<p>Sim — dá para “entuchar” bastante complexidade dentro do operador e manter a UX humana leve, desde que o LLM trabalhe sob <strong>contratos e fases</strong>. Abaixo está o padrão que recomendo para o ÁUREA.</p>
+<h2 id="padrao-operador-conversacional-oc">Padrão: Operador Conversacional (OC)</h2>
+<p>Um <strong>plugin</strong> que conversa em linguagem natural e, por baixo, produz/valida <code>WorkUnit&lt;T&gt;</code> e <code>WorkResult&lt;R&gt;</code> contra <strong>schemas</strong>. Ele faz: entender intenção, preencher slots, planejar, simular (dry-run), pedir confirmação e só então <strong>commit</strong>.</p>
+<h3 id="fases-de-fora-parece-um-chat-por-dentro-e-uma-esteira">Fases (de fora parece “um chat”, por dentro é uma esteira)</h3>
+<ol>
+<li><strong>NL → Intenção + Slots</strong><ul>
+<li>Extração para <code>ActionDraft{action_id, slots, constraints, deadline?}</code></li>
+<li>Validação imediata via JSON Schema do domínio (reduz alucinação).</li>
+</ul>
+</li>
+<li><strong>Planejamento</strong><ul>
+<li>Gera um <strong>DAG</strong> de operações (ex.: VCX → resize→encode AV1→pack).</li>
+<li>Estima <strong>custos/tempos</strong> (quotas) e políticas aplicáveis (PII/local-only, DUAL_CONTROL, janela).</li>
+</ul>
+</li>
+<li><strong>Dry-run / Pré-visualização</strong><ul>
+<li>Gera <strong>diff/preview</strong> do que vai acontecer: artefatos esperados, SLOs, custo estimado, impactos.</li>
+<li>Produz um <code>Receipt</code> <strong>ephemeral</strong> (não assinado) com <code>policy_trace</code> e orçamentos.</li>
+</ul>
+</li>
+<li><strong>Confirmação</strong><ul>
+<li>O OC pede um “OK” explícito com <strong>frase de compromisso</strong> (ex.: <code>confirm: "DUAL_CONTROL"</code> quando o tópico termina com <code>:commit</code>).</li>
+<li>Idempotência por <strong>hash do plano</strong> (<code>idem_key = blake3(dag_canon)</code>).</li>
+</ul>
+</li>
+<li><strong>Commit</strong><ul>
+<li>Emite <code>WorkUnit</code> definitivo para o tópico de execução (<code>vcx:graph</code>, <code>science:run</code>, <code>hdl:sim</code>…), assina recibo real, ancora (Merkle opcional).</li>
+<li>Stream único: <code>accepted → assigned → progress{…} → result|fail</code>.</li>
+</ul>
+</li>
+<li><strong>Pós-execução</strong><ul>
+<li>OC agrega o <code>Receipt</code> e links de artefatos/VCX-PACK numa mensagem final, oferecendo <strong>Replay</strong> e <strong>Rollback</strong> (se aplicável).</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p>Para o usuário é “fale o que quer → veja um cartão com o plano → confirme”. Sem formulariões; sem idas e vindas.</p>
+</blockquote>
+<hr />
+<h2 id="como-isso-esconde-complexidade-com-seguranca">Como isso “esconde” complexidade (com segurança)</h2>
+<ul>
+<li><strong>Schema-driven</strong>: o OC só propõe ações que existem no <strong>registry de capacidades</strong> (schemas exportados pelos plugins).</li>
+<li><strong>Slot-filling robusto</strong>: o LLM tenta preencher campos faltantes; se não couber no schema, ele <strong>auto-repara</strong> até N iterações.</li>
+<li><strong>Políticas antes da fila</strong>: <code>pii_local</code> pode reescrever o plano (trocar worker remoto por local) antes de enfileirar.</li>
+<li><strong>Dois estágios</strong>: <code>:propose</code> (ephemeral, barato) → <code>:commit</code> (assinado).</li>
+<li><strong>Quotas explícitas</strong>: o cartão de confirmação sempre mostra <code>tokens/time/custos</code> e <strong>janelas</strong> (quando pode rodar).</li>
+<li><strong>Idempotência por plano</strong>: repetir “Ok, manda bala” não duplica execução.</li>
+<li><strong>Audit trail</strong>: todo raciocínio externo vira <code>policy_trace</code> e métricas; o raciocínio interno não precisa ser exposto.</li>
+</ul>
+<hr />
+<h2 id="contratos-minimos-exemplos">Contratos mínimos (exemplos)</h2>
+<pre><code class="language-rust">// Pedido em linguagem natural → rascunho de ação
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct ActionDraft {
+  pub action_id: String,              // ex.: &quot;vcx.batch_transcode&quot;
+  pub slots: serde_json::Value,       // já validado contra o schema do action_id
+  pub constraints: Option&lt;serde_json::Value&gt;,
+  pub deadline_utc: Option&lt;String&gt;,
+}
+
+// Plano/DAG proposto
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct PlanPreview {
+  pub dag: serde_json::Value,         // DAG canônico (ordenado)
+  pub quotas: Quotas,                  // tokens/time/compute
+  pub policy_trace: Vec&lt;PolicyEntry&gt;,  // o que será exigido
+  pub estimated_ttft_ms: u32,
+  pub estimated_ttr_ms: u32
+}
+
+// Confirmação
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct CommitRequest {
+  pub plan_hash: String,               // blake3(dag_canon)
+  pub confirm_phrase: Option&lt;String&gt;,  // ex.: &quot;DUAL_CONTROL&quot;
+}
+</code></pre>
+<hr />
+<h2 id="ux-no-chat-uma-timeline-zero-atrito">UX no chat (uma timeline, zero atrito)</h2>
+<ul>
+<li>Mensagem do humano: “Converte esses 20 vídeos pra 1080p, manda link pro time A até amanhã.”</li>
+<li>OC responde com um <strong>card de plano</strong>:<ul>
+<li>“Vou: extrair 20 itens da pasta X → <code>resize(1920x1080)</code> → <code>encode_av1(preset 6)</code> → <code>pack</code> → <code>notify:teamA</code>.”</li>
+<li>SLOs e custos previstos, janelas/policies aplicadas.</li>
+<li>Botões: <strong>Confirmar</strong>, <strong>Editar</strong> (abre slots), <strong>Agendar</strong>.</li>
+</ul>
+</li>
+<li>Ao confirmar, o stream mostra progresso por etapa; no fim, aparece <strong>📜 Recibo</strong> (assinado) e <strong>Baixar VCX-PACK</strong>.</li>
+</ul>
+<hr />
+<h2 id="exemplos-por-dominio">Exemplos por domínio</h2>
+<h3 id="vcx">VCX</h3>
+<p>“Padroniza pra 1080p e AV1, manda pro time A.”<br />
+→ OC resolve slots (preset, CRF, FPS), verifica PII (não se aplica), estima TTR, pede confirmação, executa <code>vcx:graph</code>, anexa pack e envia <code>notify</code>.</p>
+<h3 id="ciencia-reprodutivel">Ciência reprodutível</h3>
+<p>“Reproduz o experimento X com seed 1337 e compara com referência.”<br />
+→ OC monta <code>ExperimentSpec</code>, injeta seed, bloqueia rede se policy pedir, aciona <code>exp_runner</code>, depois <code>exp_ingest</code> (KAT). Entrega diff e recibo.</p>
+<h3 id="hdl">HDL</h3>
+<p>“Gera HDL do módulo Y, roda sim por 10k ciclos e me dá VCD.”<br />
+→ OC monta <code>hdl_codegen</code> + <code>hdl_sim</code>, fixa TZ/clock/seed, produz pack com VCD/netlist; confirmação inclui tempo/capacidade do worker.</p>
+<hr />
+<h2 id="controles-que-mantem-tudo-livre-mas-seguro">Controles que mantêm tudo “livre, mas seguro”</h2>
+<ul>
+<li><strong>Lista branca de ações</strong> (capabilities do registry) — nada fora do contrato.</li>
+<li><strong>Campos obrigatórios</strong> sempre destacados no card; se o LLM não conseguir inferir, pede só o mínimo essencial.</li>
+<li><strong>DUAL_CONTROL</strong> para tópicos <code>*:commit</code>.</li>
+<li><strong>Local-only</strong> força workers locais automaticamente, sem o humano precisar saber.</li>
+<li><strong>Dry-run</strong> econômico: nunca queima quota pesada antes do OK.</li>
+<li><strong>Rollback/Replay</strong> direto no recibo.</li>
+</ul>
+<hr />
+<h2 id="como-integrar-no-aurea-agora">Como integrar no ÁUREA agora</h2>
+<ol>
+<li><strong>Registrar capacidades</strong>: cada plugin expõe <code>schema/action_id</code> via endpoint (<code>/v1/schema/index</code>).</li>
+<li><strong>Criar o OC</strong> no <code>plugins/op_llm_json</code> com três traits: <code>Intent</code>, <code>Planner</code>, <code>Confirmer</code>.</li>
+<li><strong>Implementar <code>:propose</code> → <code>:commit</code></strong> como dois tópicos internos (o primeiro não assina; o segundo assina).</li>
+<li><strong>UI</strong>: componente Leptos <code>PlanCard</code> (renderiza a partir do <code>PlanPreview</code>), com botões <strong>Confirmar/Editar/Agendar</strong>.</li>
+<li><strong>Políticas</strong>: hooks do OC chamam <code>policy.evaluate()</code> antes de enfileirar (aplica rota/quotas/local-only).</li>
+<li><strong>Idempotência</strong>: <code>idem_key = blake3(dag_canon)</code> no <code>CommitRequest</code>.</li>
+</ol>
+<hr />
+<h2 id="ganhos-praticos">Ganhos práticos</h2>
+<ul>
+<li><strong>Menos idas e vindas</strong>: o OC resolve slots, valida e só te incomoda para o “OK” (ou um campo crítico).</li>
+<li><strong>Erros precocemente baratos</strong>: problemas aparecem no dry-run (policies, quotas, prazos).</li>
+<li><strong>Risco controlado</strong>: nada roda “de verdade” sem confirmação, recibos são assinados e auditáveis.</li>
+<li><strong>Mesma UX para tudo</strong>: VCX, ciência e HDL se comportam como “conversas com cartões”.</li>
+</ul>
+<p>Se quiser, eu já adapto o <code>op_llm_json</code> do esqueleto para incluir <strong>Intent → PlanPreview → Commit</strong> e te deixo um exemplo real de <strong>VCX batch</strong> com card de confirmação e idempotência por hash do plano.</p>
+<h2 id="prompt_1">Prompt:</h2>
+<p>Esse é o plano! Formalizar deixando o interior tb LLM friendly</p>
+<h2 id="response_1">Response:</h2>
+<p>Perfeito. Abaixo está a <strong>Especificação V1 — ÁUREA com interior LLM-friendly</strong>, formalizando interfaces, contratos e o Operador Conversacional (OC) para que a UX seja “fale→confirme→execute”, enquanto o interior continua 100% tipado, verificável e seguro.</p>
+<h1 id="1-principios-llm-friendly">1) Princípios LLM-friendly</h1>
+<ul>
+<li><strong>Tudo é Schema</strong>: cada ação publica JSON Schema (+ exemplos) e um “tool spec” claro para LLMs.</li>
+<li><strong>Dois estágios</strong>: <code>:propose</code> (barato, ephemero, sem efeitos) → <code>:commit</code> (executa, assina, ancora).</li>
+<li><strong>Idempotência por plano</strong>: <code>idem_key = blake3(dag_canon)</code>. Repetir “OK” não duplica execução.</li>
+<li><strong>Auto-reparo limitado</strong>: OC tenta reparar JSON inválido até <code>N=2</code> iterações; depois pede 1 campo humano.</li>
+<li><strong>Privacidade de raciocínio</strong>: sem exigir cadeia de pensamento; OC retorna apenas dados estruturados + justificativas curtas.</li>
+<li><strong>Políticas antes da fila</strong>: DUAL_CONTROL/PII/local-only aplicadas no <code>:propose</code>, com traço explicativo no preview.</li>
+</ul>
+<h1 id="2-registro-de-capacidades-capability-registry">2) Registro de Capacidades (Capability Registry)</h1>
+<p>Endpoint: <code>GET /v1/capabilities</code></p>
+<pre><code class="language-json">{
+  &quot;version&quot;: &quot;1.0&quot;,
+  &quot;capabilities&quot;: [
+    {
+      &quot;action_id&quot;: &quot;vcx.batch_transcode&quot;,
+      &quot;schema_id&quot;: &quot;aurea.vcx.batch_transcode&quot;,
+      &quot;schema_v&quot;: 1,
+      &quot;summary&quot;: &quot;Transcodifica lista de mídias p/ alvo padronizado.&quot;,
+      &quot;examples&quot;: [&quot;Padroniza 1080p AV1 para pasta X e notifica time A.&quot;],
+      &quot;topics&quot;: { &quot;commit&quot;: &quot;vcx:graph&quot;, &quot;propose&quot;: &quot;vcx:propose&quot; }
+    }
+  ]
+}
+</code></pre>
+<h1 id="3-convencoes-de-schema-json-schema-canonico">3) Convenções de Schema (JSON Schema, canônico)</h1>
+<ul>
+<li><strong>Campos padrão</strong>: <code>@type</code>, <code>@ver</code>, <code>schema_id</code>, <code>schema_v</code>.</li>
+<li><strong>Enums/tags</strong>: <code>#[serde(tag="op", rename_all="snake_case")]</code> para variantes.</li>
+<li><strong>Exemplos e hints</strong>: incluir <code>x-ui</code> e <code>x-llm</code> (metadados amigáveis ao LLM).</li>
+<li><strong>Canonização</strong>: JSON canônico para hashing (ordem estável, sem floats não determinísticos).</li>
+</ul>
+<p>Exemplo (resumo) — <code>aurea.vcx.batch_transcode@1</code>:</p>
+<pre><code class="language-json">{
+  &quot;$id&quot;: &quot;aurea.vcx.batch_transcode#1&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;required&quot;: [&quot;inputs&quot;, &quot;video&quot;, &quot;notify&quot;],
+  &quot;properties&quot;: {
+    &quot;inputs&quot;: { &quot;type&quot;: &quot;array&quot;, &quot;items&quot;: { &quot;type&quot;: &quot;string&quot;, &quot;format&quot;: &quot;uri&quot; }, &quot;minItems&quot;: 1,
+      &quot;description&quot;: &quot;URIs ou IDs internos de mídias de entrada&quot; },
+    &quot;video&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [&quot;width&quot;,&quot;height&quot;,&quot;codec&quot;],
+      &quot;properties&quot;: {
+        &quot;width&quot;: {&quot;type&quot;:&quot;integer&quot;,&quot;minimum&quot;:16}, &quot;height&quot;:{&quot;type&quot;:&quot;integer&quot;,&quot;minimum&quot;:16},
+        &quot;codec&quot;: {&quot;enum&quot;: [&quot;av1&quot;]}, &quot;preset&quot;: {&quot;type&quot;:&quot;integer&quot;,&quot;minimum&quot;:0,&quot;maximum&quot;:10},
+        &quot;crf&quot;: {&quot;type&quot;:&quot;integer&quot;,&quot;minimum&quot;:0,&quot;maximum&quot;:63}, &quot;fps&quot;: {&quot;type&quot;:&quot;number&quot;,&quot;minimum&quot;:1}
+      },
+      &quot;x-llm&quot;: { &quot;defaults&quot;: {&quot;codec&quot;:&quot;av1&quot;,&quot;preset&quot;:6,&quot;crf&quot;:28,&quot;fps&quot;:30} }
+    },
+    &quot;notify&quot;: {
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;required&quot;: [&quot;channel&quot;],
+      &quot;properties&quot;: { &quot;channel&quot;:{&quot;type&quot;:&quot;string&quot;}, &quot;message&quot;:{&quot;type&quot;:&quot;string&quot;} }
+    },
+    &quot;deadline_utc&quot;: {&quot;type&quot;:&quot;string&quot;,&quot;format&quot;:&quot;date-time&quot;}
+  }
+}
+</code></pre>
+<h1 id="4-operador-conversacional-oc-contratos">4) Operador Conversacional (OC) — Contratos</h1>
+<h2 id="41-intencao-slots">4.1 Intenção &amp; Slots</h2>
+<pre><code class="language-json">{
+  &quot;@type&quot;:&quot;aurea/intent.v1&quot;,
+  &quot;action_id&quot;:&quot;vcx.batch_transcode&quot;,
+  &quot;slots&quot;: { &quot;...&quot;: &quot;valores já validados contra o schema do action_id&quot; },
+  &quot;constraints&quot;: { &quot;window&quot;:&quot;business_hours&quot;, &quot;local_only&quot;:true },
+  &quot;deadline_utc&quot;:&quot;2026-02-20T17:00:00Z&quot;
+}
+</code></pre>
+<h2 id="42-planopreview-ephemero">4.2 Plano/Preview (ephemero)</h2>
+<pre><code class="language-json">{
+  &quot;@type&quot;:&quot;aurea/plan_preview.v1&quot;,
+  &quot;plan_hash&quot;:&quot;b3_..._abcd&quot;,
+  &quot;dag&quot;: { &quot;nodes&quot;:[...], &quot;edges&quot;:[...] },      // canônico
+  &quot;quotas&quot;: { &quot;tokens&quot;: 0, &quot;time_ms&quot;: 540000 },
+  &quot;policy_trace&quot;: [ {&quot;rule&quot;:&quot;pii_local&quot;,&quot;ok&quot;:true}, {&quot;rule&quot;:&quot;window&quot;,&quot;ok&quot;:true} ],
+  &quot;estimated_ttft_ms&quot;: 800,
+  &quot;estimated_ttr_ms&quot;: 300000,
+  &quot;artifacts_preview&quot;:[{&quot;kind&quot;:&quot;pack&quot;,&quot;label&quot;:&quot;vcx-output&quot;,&quot;est_size&quot;:&quot;~4.2GB&quot;}],
+  &quot;confirm_required&quot;: &quot;DUAL_CONTROL&quot;            // ou null
+}
+</code></pre>
+<h2 id="43-confirmacao-commit">4.3 Confirmação → Commit</h2>
+<pre><code class="language-json">{
+  &quot;@type&quot;:&quot;aurea/commit_request.v1&quot;,
+  &quot;plan_hash&quot;:&quot;b3_..._abcd&quot;,
+  &quot;confirm_phrase&quot;:&quot;DUAL_CONTROL&quot;,
+  &quot;idem_key&quot;:&quot;b3_..._abcd&quot;,                      // = plan_hash
+  &quot;tenant&quot;:&quot;acme&quot;
+}
+</code></pre>
+<h1 id="5-topicos-e-estados-fsm">5) Tópicos e Estados (FSM)</h1>
+<p><strong>Tópicos</strong></p>
+<ul>
+<li>Proposição: <code>*:propose</code> (sem assinatura; guarda preview opcional com TTL curto).</li>
+<li>Execução: <code>*:commit</code> → enfileira em <code>vcx:graph</code>, <code>science:run</code>, <code>hdl:sim</code>, etc.</li>
+</ul>
+<p><strong>Estados (stream único)</strong><br />
+<code>accepted → assigned → progress{stage,time_ms,meta?} → result{...} | fail{error_code, details}</code></p>
+<p><strong>Códigos de erro (curtos, operacionais)</strong></p>
+<ul>
+<li><code>SCHEMA_INVALID</code>, <code>SLOT_MISSING</code>, <code>POLICY_BLOCKED</code>, <code>LEASE_EXPIRED</code>, <code>WORKER_UNAVAILABLE</code>, <code>ARTIFACT_VERIFY_FAIL</code>, <code>TIME_BUDGET_EXCEEDED</code></li>
+</ul>
+<h1 id="6-apis-http3-sse">6) APIs (HTTP/3 + SSE)</h1>
+<ul>
+<li><code>GET /v1/capabilities</code> → registry</li>
+<li><code>GET /v1/schema/{schema_id}/{v}</code> → JSON Schema</li>
+<li><code>POST /v1/oc/parse_intent</code> → <code>Intent</code> (OC interpreta NL→slots válidos)</li>
+<li><code>POST /v1/oc/plan_preview</code> → <code>PlanPreview</code> (aplica policies/quotas)</li>
+<li><code>POST /v1/oc/commit</code> → <code>{status, receipt_cid}</code></li>
+<li><code>GET /v1/stream?tenant=&amp;topic=&amp;id=</code> → SSE estados</li>
+<li><code>GET /v1/receipts/{cid}</code> → <code>Receipt</code> assinado</li>
+<li><code>POST /v1/verify/pack</code> → <code>{"ok":true,"issues":[]}</code></li>
+<li><code>GET /v1/metrics</code> (Prometheus) | <code>POST /v1/export?format=parquet|arrow</code></li>
+</ul>
+<h1 id="7-tool-spec-p-llms-funcoes-chamaveis">7) Tool Spec p/ LLMs (funções chamáveis)</h1>
+<h2 id="71-list_capabilities">7.1 list_capabilities</h2>
+<ul>
+<li><strong>input</strong>: <code>{}</code></li>
+<li><strong>output</strong>: <code>{"capabilities":[{action_id,schema_id,schema_v,summary}]}</code></li>
+</ul>
+<h2 id="72-get_schema">7.2 get_schema</h2>
+<ul>
+<li><strong>input</strong>: <code>{"schema_id":"aurea.vcx.batch_transcode","schema_v":1}</code></li>
+<li><strong>output</strong>: <code>JSON Schema</code></li>
+</ul>
+<h2 id="73-propose_plan">7.3 propose_plan</h2>
+<ul>
+<li><strong>input</strong>: <code>ActionDraft</code> (intenção+slots)</li>
+<li><strong>output</strong>: <code>PlanPreview</code> ou erro <code>SCHEMA_INVALID</code> com <code>repair_hints[]</code></li>
+</ul>
+<h2 id="74-commit_plan">7.4 commit_plan</h2>
+<ul>
+<li><strong>input</strong>: <code>CommitRequest</code></li>
+<li><strong>output</strong>: <code>{status:"accepted", "receipt_cid":"rcpt-..."}</code></li>
+</ul>
+<h2 id="75-replay_from_receipt">7.5 replay_from_receipt</h2>
+<ul>
+<li><strong>input</strong>: <code>{"receipt_cid":"rcpt-...","override?":{}}</code></li>
+<li><strong>output</strong>: <code>{status, new_receipt_cid}</code></li>
+</ul>
+<blockquote>
+<p>Esses “tools” são estáveis para function-calling/Actions de qualquer provedor.</p>
+</blockquote>
+<h1 id="8-auto-reparo-e-limites">8) Auto-reparo e limites</h1>
+<ul>
+<li><strong>Loop de reparo</strong>: até <strong>2</strong> tentativas:<ol>
+<li>Validar <code>slots</code> contra schema → se falhar, gerar <code>repair_patch</code> minimal (ex.: preencher <code>preset</code>, <code>crf</code>, normalizar <code>fps</code> inteiro).</li>
+<li>Se ainda inválido, pedir <strong>apenas</strong> os campos faltantes numa “mensagem curta de solicitação” (texto curto + lista de campos).</li>
+</ol>
+</li>
+<li><strong>Campos perigosos</strong>: bloqueados por policy (<code>local_only</code>, <code>dual_control</code>, <code>max_duration_ms</code>, <code>allowed_codecs</code>).</li>
+</ul>
+<h1 id="9-politicas-llm-aware">9) Políticas (LLM-aware)</h1>
+<ul>
+<li>OC chama <code>policy.evaluate(Intent|Plan)</code> antes de enfileirar.</li>
+<li>Exemplo de regras:<ul>
+<li><code>pii_local</code>: se <code>inputs</code> apontam para espaço PII, <code>route=LocalOnly</code> e <code>capabilities=["local_gpu","no_network"]</code>.</li>
+<li><code>window</code>: <code>deadline_utc</code> fora da janela → <strong>agenda</strong> (OC sugere <code>schedule_at</code>).</li>
+<li><code>commitment</code>: ações com efeitos externos exigem <code>confirm_phrase:"DUAL_CONTROL"</code>.</li>
+</ul>
+</li>
+</ul>
+<p><code>policy_trace</code> sempre vem no <code>PlanPreview</code> e no <code>Receipt</code>.</p>
+<h1 id="10-recibos-e-assinaturas">10) Recibos e Assinaturas</h1>
+<ul>
+<li><strong>Receipt</strong> inclui: <code>work_hash</code>, <code>result_hash</code>, <code>policy_trace[]</code>, <code>ttft_ms</code>, <code>ttr_ms</code>, <code>signatures[]</code>, <code>artifacts[] (pack_cid, entries[])</code>, <code>schema_id/v</code>.</li>
+<li><strong>Assinatura</strong>: ed25519 (<code>alg:"Ed25519"</code>, <code>key_id:"kid-2026-02-01"</code>, <code>sig:base64</code>).</li>
+<li><strong>Âncoras Merkle</strong>: raiz diária armazenada e exposta em <code>/v1/anchors/YYYY-MM-DD</code>.</li>
+</ul>
+<h1 id="11-observabilidade-sre">11) Observabilidade (SRE)</h1>
+<ul>
+<li>Métricas:<ul>
+<li><code>aurea_ttft_ms{topic}</code></li>
+<li><code>aurea_ttr_ms{topic}</code></li>
+<li><code>aurea_queue_depth{topic}</code></li>
+<li><code>aurea_reassigns_total{topic}</code></li>
+<li><code>aurea_error_rate{topic,error_code}</code></li>
+</ul>
+</li>
+<li>Export: <code>/v1/export?format=parquet&amp;since=...</code> com <code>receipts</code>, <code>stages</code>, <code>artifacts</code>.</li>
+</ul>
+<h1 id="12-ux-chat-cartao-confirmar">12) UX (chat → cartão → confirmar)</h1>
+<ul>
+<li><strong>Card do Plano</strong> renderizado de <code>PlanPreview</code>:<ul>
+<li>Resumo em 3 linhas, lista de etapas, <strong>custos/SLOs</strong>, <code>policy_trace</code>.</li>
+<li>Botões: <strong>Confirmar</strong>, <strong>Editar campos</strong> (renderizados via schema), <strong>Agendar</strong>.</li>
+</ul>
+</li>
+<li>Confirmou? Stream mostra <code>accepted/assigned/progress/result</code> + link <strong>📜 Recibo</strong> e <strong>Baixar VCX-PACK</strong>.</li>
+</ul>
+<h1 id="13-exemplos-rapidos">13) Exemplos rápidos</h1>
+<h2 id="131-requisicao-natural-oc">13.1 Requisição natural → OC</h2>
+<p>Usuário: “Converte 20 vídeos da pasta /lab/raw para 1080p AV1 e avisa o time A. Entrega até amanhã.”</p>
+<p><strong>Fluxo interno:</strong></p>
+<ol>
+<li><code>list_capabilities</code> → encontra <code>vcx.batch_transcode</code>.</li>
+<li><code>get_schema</code> → aplica defaults (<code>preset=6, crf=28, fps=30</code>).</li>
+<li><code>propose_plan</code> → <code>PlanPreview{plan_hash=..., policy_trace=[window:ok, pii_local:false]}</code>.</li>
+<li>UI mostra card → usuário clica <strong>Confirmar</strong>.</li>
+<li><code>commit_plan{plan_hash, confirm_phrase?}</code> → <code>{status:"accepted",receipt_cid:"rcpt-..."}</code>.</li>
+<li>Stream + Recibo assinado.</li>
+</ol>
+<h2 id="132-falta-um-slot">13.2 Falta um slot</h2>
+<p>Se <code>fps</code> omitido → OC tenta <code>30</code>. Se schema exigir inteiro e veio <code>29.97</code>, <strong>auto-repara</strong> para <code>30</code>. Ainda falhou? Pede só <code>fps</code>.</p>
+<h1 id="14-roadmap-llm-friendly-incremental">14) Roadmap LLM-friendly (incremental)</h1>
+<ul>
+<li><strong>Fase A</strong>: publicar capabilities+schemas+examples; implementar <code>propose_plan/commit_plan</code>; UI Card.</li>
+<li><strong>Fase B</strong>: reparo automático + dif de planos (explicativo) + idempotência por plano.</li>
+<li><strong>Fase C</strong>: políticas duras (DUAL_CONTROL/local-only/janelas) + anchors.</li>
+<li><strong>Fase D</strong>: agents externos (CLI/mobile) usando o mesmo tool spec.</li>
+</ul>
+<hr />
+<h2 id="entregaveis-desta-especificacao">Entregáveis desta especificação</h2>
+<ol>
+<li>Endpoints e modelos JSON acima implementados no <code>aurea serve</code>.</li>
+<li>Registry de capacidades com schemas versionados e exemplos.</li>
+<li>OC dentro de <code>plugins/op_llm_json</code> com fases: <strong>Intent → Plan → Commit</strong>.</li>
+<li>UI Leptos com <strong>PlanCard</strong> e formulários auto-gerados pelo schema.</li>
+<li>Validação, auto-reparo (N=2), idempotência por <code>plan_hash</code>, assinatura de recibos e métricas SRE.</li>
+</ol>
+<p>Com isso, a “conversa” vira a interface — e a complexidade fica dentro, contratualizada e auditável, sem atrito para quem usa. Quer que eu já atualize o esqueleto para incluir <code>capabilities</code>, <code>oc/*</code> (endpoints), <code>PlanCard</code> e um exemplo completo de <code>vcx.batch_transcode</code>?</p>
+<h2 id="prompt_2">Prompt:</h2>
+<p>o plano completo são as 2 mensagens últimas né?</p>
+<h2 id="response_2">Response:</h2>
+<p>Sim. O plano completo está nas <strong>duas últimas mensagens</strong>:</p>
+<ol>
+<li><strong>Padrão do Operador Conversacional (OC)</strong> — como o LLM conduz intenção → plano → confirmação → execução, com dry-run, idempotência por plano e políticas aplicadas antes da fila.</li>
+<li><strong>Especificação V1 LLM-friendly</strong> — formalização dos contratos e APIs:<ul>
+<li>Registry de capacidades + JSON Schemas e metadados <code>x-llm</code>.</li>
+<li>Objetos <code>Intent</code>, <code>PlanPreview</code>, <code>CommitRequest</code> e FSM de estados.</li>
+<li>Endpoints (<code>/v1/oc/*</code>, schemas, receipts, metrics, export).</li>
+<li>Tool spec para function-calling (list/get/propose/commit/replay).</li>
+<li>Policies, assinaturas, âncoras Merkle, métricas SRE e UI PlanCard.</li>
+<li>Roadmap de implementação.</li>
+</ul>
+</li>
+</ol>
+<p>Se quiser, junto tudo em um único <strong>doc Markdown</strong> (ou PDF) com índice e links entre seções.</p>
+<h2 id="prompt_3">Prompt:</h2>
+<p>Fazer pesquisa ampla na internet sobre softwares que tentam a reprodutibilidade de experimentos científicos - o que fazem, como fazem e as dores</p>
+<h2 id="response_3">Response:</h2>
+<p>Thought for 24s</p>
+<p>Perfeito, Dan! Fiz uma varredura ampla e organizei o panorama em 6 “famílias” de soluções para reprodutibilidade computacional — com exemplos, como fazem e as dores típicas que relatam. No fim, deixo um mapa das principais lacunas onde o ÁUREA pode brilhar.</p>
+<h1 id="1-empacotamentocapsulas-executaveis">1) Empacotamento/cápsulas executáveis</h1>
+<p><strong>O que fazem:</strong> empacotam código+ambiente+dados e (às vezes) resultados numa “cápsula” que pode ser reexecutada noutro lugar.<br />
+<strong>Como fazem:</strong> traçam dependências e congelam ambiente (sistemas, libs, variáveis) e inputs, depois geram um pacote com manifesto/proveniência; alguns dão DOI e histórico.<br />
+<strong>Exemplos:</strong></p>
+<ul>
+<li><strong>ReproZip/ReproServer</strong>: captura execuções e gera um bundle <code>.rpz</code>; reexecuta em diversos “unpackers” (sem lock-in). <a href="https://www.reprozip.org/?utm_source=chatgpt.com">reprozip.org+2docs.libnova.com+2</a></li>
+<li><strong>Code Ocean</strong>: “compute capsules” imutáveis com lineage graph, versionamento, DOI/publish. <a href="https://codeocean.com/product/compute-capsules?utm_source=chatgpt.com">codeocean.com+2library.hkust.edu.hk+2</a></li>
+<li><strong>Whole Tale</strong>: “tales” como objetos de pesquisa executáveis (dados+ambiente+código+metadados). <a href="https://wholetale.org/?utm_source=chatgpt.com">wholetale.org+2labs.globus.org+2</a></li>
+<li><strong>RO-Crate / Workflow RO-Crate</strong>: padrão para empacotar objetos (dados, software, workflows) com metadados FAIR e perfis para <strong>runs</strong> (proveniência de execuções). <a href="https://www.researchobject.org/ro-crate/about_ro_crate?utm_source=chatgpt.com">researchobject.org+3researchobject.org+3RDA+3</a></li>
+</ul>
+<p><strong>Dores comuns:</strong> drift do ambiente com o tempo, formatos/ontologias diferentes de proveniência, dados sensíveis e acesso a repositórios externos. <a href="https://www.sciencedirect.com/science/article/pii/S0167739X25002195?utm_source=chatgpt.com">ScienceDirect+1</a></p>
+<h1 id="2-orquestradoresworkflow-engines">2) Orquestradores/workflow engines</h1>
+<p><strong>O que fazem:</strong> definem pipelines determinísticos, paralelizam, escalam em HPC/cloud e <strong>integram containers</strong> para portabilidade.<br />
+<strong>Como fazem:</strong> linguagens declarativas (Snakefile, Nextflow DSL, CWL), execução com Docker/Apptainer, caching, além de catálogos comunitários (nf-core, WorkflowHub).<br />
+<strong>Exemplos:</strong></p>
+<ul>
+<li><strong>Snakemake</strong>: workflows declarados em Python; descrevem softwares e implantam automaticamente; documentação foca em portabilidade e reprodutibilidade. <a href="https://snakemake.readthedocs.io/en/stable/?utm_source=chatgpt.com">snakemake.readthedocs.io+1</a></li>
+<li><strong>Nextflow</strong>: executa com Docker/Apptainer/Podman; mesma pipeline roda em qualquer Unix; integração com Git e nf-core. <a href="https://nextflow.io/docs/latest/container.html?utm_source=chatgpt.com">nextflow.io+1</a></li>
+<li><strong>Galaxy</strong>: plataforma web multi-usuário com workflows reprodutíveis e biblioteca pública; integra repositórios de dados (ex.: Dataverse) e fornece DOIs para workflows curados. <a href="https://academic.oup.com/nar/article/52/W1/W83/7676834?utm_source=chatgpt.com">OUP Academic+2iwc.galaxyproject.org+2</a></li>
+<li><strong>WorkflowHub</strong> (registro): publica/descobre workflows com <strong>RO-Crate</strong>, CWL, TRS; promove workflows como objetos FAIR. <a href="https://workflowhub.eu/?utm_source=chatgpt.com">workflowhub.eu+2Nature+2</a></li>
+</ul>
+<p><strong>Dores comuns:</strong> falhas de reexecução automática por dependências externas, falta de padrões interoperáveis de proveniência (daí o avanço do <strong>Workflow Run RO-Crate</strong>). <a href="https://mir.cs.illinois.edu/marinov/publications/GraysonETAL23SnakemakeNextflow.pdf?utm_source=chatgpt.com">mir.cs.illinois.edu+1</a></p>
+<h1 id="3-notebooks-reproduziveis-ensinodemos">3) Notebooks reproduzíveis (ensino/demos)</h1>
+<p><strong>O que fazem:</strong> tornam repositórios executáveis em um clique para ensino, revisão e demo.<br />
+<strong>Como fazem:</strong> <strong>Binder/BinderHub</strong> constrói imagens a partir de <code>environment.yml</code>/<code>requirements.txt</code>/<code>Dockerfile</code> e sobe um Jupyter efêmero. <a href="https://jupyter.org/binder?utm_source=chatgpt.com">jupyter.org+2mybinder.org+2</a><br />
+<strong>Dores:</strong> limites de recursos/tempo, falta de GPU persistente, e dependência de arquivos de configuração bem mantidos. <a href="https://earth-env-data-science.github.io/lectures/environment/binder.html?utm_source=chatgpt.com">earth-env-data-science.github.io</a></p>
+<h1 id="4-gestao-de-dados-versoes-e-proveniencia">4) Gestão de dados, versões e proveniência</h1>
+<p><strong>O que fazem:</strong> versionam datasets e modelos, ligam execuções a artefatos, e preservam o <strong>lineage</strong> (quem gerou o quê, quando e como).<br />
+<strong>Como fazem:</strong> sobre Git/git-annex e/ou armazenamento de objetos; logs de execuções; referências imutáveis.<br />
+<strong>Exemplos:</strong></p>
+<ul>
+<li><strong>DataLad</strong>: versionamento de dados/coleções, integração com RDM; casos de “paper reprodutível”. <a href="https://www.datalad.org/?utm_source=chatgpt.com">datalad.org+1</a></li>
+<li><strong>DVC</strong>: extensão Git para dados/modelos/experimentos; pipelines reproduzíveis para ML. <a href="https://dvc.org/?utm_source=chatgpt.com">DVC+1</a></li>
+<li><strong>MLflow</strong>: rastreia parâmetros, métricas e <strong>artefatos</strong>; registry de modelos para reexecutar/validar. <a href="https://mlflow.org/docs/latest/api_reference/python_api/mlflow.artifacts.html?utm_source=chatgpt.com">MLflow+1</a></li>
+<li><strong>Pachyderm</strong>: pipelines dirigidos a dados com <strong>data versioning</strong> e lineage automáticos em Kubernetes. <a href="https://github.com/pachyderm/pachyderm?utm_source=chatgpt.com">GitHub+1</a></li>
+</ul>
+<p><strong>Dores:</strong> custo/complexidade de hospedar infra, GC de dados grandes, políticas de acesso/PII; necessidade de “glue” para ligar dados↔workflow↔recibos verificáveis. <a href="https://atlan.com/pachyderm-data-lineage/?utm_source=chatgpt.com">Atlan+1</a></p>
+<h1 id="5-portais-de-compartilhamentodoi-e-open-science">5) Portais de compartilhamento/DOI e open science</h1>
+<p><strong>O que fazem:</strong> providenciam depósito/DOI para dados, código, cápsulas e materiais; melhoram citação e descoberta.<br />
+<strong>Exemplos:</strong> <strong>OSF</strong> (gestão do ciclo de pesquisa, preregistro, integra GitHub/Drive); <strong>Figshare</strong> (repositório com DOI). <a href="https://www.cos.io/products/osf?utm_source=chatgpt.com">cos.io+2Current Protocols+2</a></p>
+<p><strong>Dores:</strong> políticas desiguais entre periódicos, pouca padronização de “o que conta” como material reproduzível. <a href="https://www.frontiersin.org/journals/computer-science/articles/10.3389/fcomp.2024.1491823/full?utm_source=chatgpt.com">Frontiers</a></p>
+<h1 id="6-padroes-de-metadados-e-praticas">6) Padrões de metadados e práticas</h1>
+<p><strong>O que fazem:</strong> definem boas práticas e padrões para tornar pacotes/workflows <strong>FAIR</strong> e reproduzíveis (PROV, RO-Crate, “Ten Simple Rules”).<br />
+<strong>Referências úteis:</strong> guias e revisões listando barreiras (ambiente, dados restritos, cultura e treino) e recomendações. <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1003285&amp;utm_source=chatgpt.com">PLOS+2PLOS+2</a></p>
+<hr />
+<h2 id="padroes-de-como-recorrentes-nos-projetos">Padrões de “como” (recorrentes nos projetos)</h2>
+<ol>
+<li><strong>Containerização + pin de versões</strong> (Docker/Apptainer) p/ isolar dependências. <a href="https://nextflow.io/docs/latest/container.html?utm_source=chatgpt.com">nextflow.io+1</a></li>
+<li><strong>Proveniência de execução</strong> (graph/lineage, RO-Crate para runs). <a href="https://codeocean.com/product/compute-capsules?utm_source=chatgpt.com">codeocean.com+1</a></li>
+<li><strong>Empacotes citáveis</strong> com manifesto + DOI (capsule/tale/RO-Crate). <a href="https://wholetale.org/?utm_source=chatgpt.com">wholetale.org+1</a></li>
+<li><strong>Registries</strong> de workflows (descoberta, versões, testes contínuos). <a href="https://iwc.galaxyproject.org/about/?utm_source=chatgpt.com">iwc.galaxyproject.org</a></li>
+<li><strong>Versionamento de dados/modelos</strong> e amarração aos jobs. <a href="https://www.datalad.org/?utm_source=chatgpt.com">datalad.org+1</a></li>
+</ol>
+<hr />
+<h2 id="dores-estruturais-sintese">Dores estruturais (síntese)</h2>
+<ul>
+<li><strong>Drift e envelhecimento</strong>: ambientes e imagens se tornam irreprodutíveis com o tempo; necessidade de “receipts” verificáveis e âncoras. <a href="https://mir.cs.illinois.edu/marinov/publications/GraysonETAL23SnakemakeNextflow.pdf?utm_source=chatgpt.com">mir.cs.illinois.edu</a></li>
+<li><strong>Dados e acesso</strong>: PII, dados proprietários e repositórios privados quebram demos públicas; soluções integram uploads diretos e trilhas auditáveis. <a href="https://galaxyproject.org/news/2026-01-15-dataverse/?utm_source=chatgpt.com">galaxyproject.org</a></li>
+<li><strong>Interoperabilidade de proveniência</strong>: múltiplos formatos; RO-Crate Run surge para padronizar “execução”. <a href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0309210&amp;utm_source=chatgpt.com">PLOS</a></li>
+<li><strong>Custo/infra</strong>: operar clusters/containers/registries e armazenar versões é caro; GC e políticas de retenção são essenciais. <a href="https://atlan.com/pachyderm-data-lineage/?utm_source=chatgpt.com">Atlan</a></li>
+<li><strong>Cultura e política editorial</strong>: variação grande nas exigências de reprodutibilidade e pouco reconhecimento formal para software/dados. <a href="https://www.frontiersin.org/journals/computer-science/articles/10.3389/fcomp.2024.1491823/full?utm_source=chatgpt.com">Frontiers</a></li>
+<li><strong>GPU/aleatoriedade</strong>: determinismo em ML/AV1/HDL exige seeds, fixar clocks/TZ, desabilitar rede quando necessário (práticas, não só ferramentas). <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1003285&amp;utm_source=chatgpt.com">PLOS</a></li>
+</ul>
+<hr />
+<h2 id="onde-o-aurea-se-encaixa-oportunidades">Onde o ÁUREA se encaixa (oportunidades)</h2>
+<ul>
+<li><strong>Recibos fortes</strong>: muitos projetos têm metadata/lineage, poucos entregam <strong>receipts assinados</strong> com hashes de entrada/saída e política aplicada — lacuna que o ÁUREA cobre nativamente. <a href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0309210&amp;utm_source=chatgpt.com">PLOS</a></li>
+<li><strong>Idempotência por plano</strong> + <strong>DUAL_CONTROL/local-only</strong> antes da fila: raramente é 1ª classe fora de domínios regulados. <a href="https://www.frontiersin.org/journals/computer-science/articles/10.3389/fcomp.2024.1491823/full?utm_source=chatgpt.com">Frontiers</a></li>
+<li><strong>Pacote universal de artefatos (VCX-PACK) + RO-Crate</strong>: interoperar com RO-Crate/WorkflowHub mantendo benefícios de empacote binário eficiente. <a href="https://www.researchobject.org/workflow-run-crate/?utm_source=chatgpt.com">researchobject.org</a></li>
+<li><strong>UI conversacional com dry-run</strong>: grande parte das plataformas exige formulariões; o padrão OC do ÁUREA reduz atrito sem perder contrato. (Contexto comparado a Code Ocean “preview” e Galaxy “history/workflow tests”.) <a href="https://codeocean.com/product/compute-capsules?utm_source=chatgpt.com">codeocean.com+1</a></li>
+</ul>
+<hr />
+<h2 id="lista-curta-de-ferramentas-por-uso">Lista curta de ferramentas (por uso)</h2>
+<ul>
+<li><strong>Cápsulas/empacote:</strong> ReproZip; Code Ocean; Whole Tale; RO-Crate/Workflow RO-Crate. <a href="https://www.reprozip.org/?utm_source=chatgpt.com">ScienceInsights+3reprozip.org+3codeocean.com+3</a></li>
+<li><strong>Workflows:</strong> Snakemake; Nextflow; Galaxy; CWL (via WorkflowHub). <a href="https://snakemake.readthedocs.io/en/stable/?utm_source=chatgpt.com">workflowhub.eu+3snakemake.readthedocs.io+3nextflow.io+3</a></li>
+<li><strong>Dados/linhagem:</strong> DataLad; DVC; MLflow; Pachyderm. <a href="https://www.datalad.org/?utm_source=chatgpt.com">GitHub+3datalad.org+3DVC+3</a></li>
+<li><strong>Notebooks:</strong> Binder/BinderHub. <a href="https://jupyter.org/binder?utm_source=chatgpt.com">jupyter.org</a></li>
+<li><strong>Open science/DOI:</strong> OSF; Figshare. <a href="https://www.cos.io/products/osf?utm_source=chatgpt.com">cos.io+1</a></li>
+</ul>
+<p>Se quiser, converto isso num <strong>doc comparativo</strong> (tabelado) com critérios (empacote, workflows, proveniência, DOI, containers, GPU, PII, políticas), marcando onde cada um é forte/fraco e adiciono recomendações de interoperabilidade direta com o ÁUREA (ex.: export de <strong>Workflow Run RO-Crate</strong> junto do <strong>Receipt</strong>).</p>
+<h2 id="prompt_4">Prompt:</h2>
+<p>O que é importante incorporar</p>
+<h2 id="response_4">Response:</h2>
+<p>Perfeito — aqui vai o que <strong>vale incorporar já</strong> no ÁUREA para ficar sólido, interoperável e com UX leve, sem perder força técnica.</p>
+<h2 id="1-padroes-e-interoperabilidade-sem-lock-in">1) Padrões e interoperabilidade (sem lock-in)</h2>
+<ul>
+<li><strong>Export/Import RO-Crate (incl. Workflow Run RO-Crate)</strong> junto do <strong>Receipt</strong>: mantém FAIR/descoberta e facilita publicação/DOI.</li>
+<li><strong>Mapeamento VCX-PACK ↔ RO-Crate</strong>: manifesto → <code>ro-crate-metadata.json</code>, <code>entries[]</code> → <code>hasPart[]</code>; incluir <code>provenance/activity</code>.</li>
+<li><strong>JSON Schema + “tool spec”</strong> por ação: <code>schema_id/v</code>, exemplos, <code>x-llm</code> (defaults/hints), <code>x-ui</code> (widget/semântica).</li>
+<li><strong>CWL/Snakemake/Nextflow adapters (leitura)</strong>: importar um pipeline e convertê-lo para DAG tipado do ÁUREA (mesmo que com perda mínima).</li>
+</ul>
+<h2 id="2-determinismo-e-proveniencia-by-default">2) Determinismo e proveniência “by default”</h2>
+<ul>
+<li><strong>Canonical JSON</strong> para hashing (NRF/CID) e idempotência por plano (hash do DAG).</li>
+<li><strong>Seeds/TZ/clock fixos</strong> e <strong>“no network”</strong> opcional por policy; registrar <strong>hardware/runtime fingerprint</strong> (CPU/GPU, driver, libc).</li>
+<li><strong>Merkle diário</strong> para recibos (root publicado); todas execuções com <strong>assinatura ed25519</strong> e <code>kid</code> rotativo.</li>
+<li><strong>KATs contínuos</strong>: toda ação crítica tem <code>exp_ingest</code>/comparador oficial (bit-a-bit para ciência/HDL; tolerâncias documentadas para mídia/ML).</li>
+</ul>
+<h2 id="3-politica-e-seguranca-antes-da-fila">3) Política e segurança antes da fila</h2>
+<ul>
+<li><strong>Avaliação de policy no <code>:propose</code></strong> (não no <code>:commit</code>): <code>local-only/PII</code>, janelas, cotas e DUAL_CONTROL já aparecem no <strong>PlanCard</strong>.</li>
+<li><strong>DUAL_CONTROL</strong> com frase de compromisso e carimbo no recibo; <strong>rastreabilidade</strong> do aprovador no <code>policy_trace</code>.</li>
+<li><strong>Rotas automáticas</strong>: se PII ou segredo → força <strong>worker local</strong>; se janela restrita → <strong>agenda</strong> em vez de falhar.</li>
+</ul>
+<h2 id="4-dados-e-artefatos-como-1a-classe">4) Dados e artefatos como 1ª classe</h2>
+<ul>
+<li><strong>Integração opcional com DVC/DataLad</strong>: gravar no <code>Receipt</code> a referência imutável do dataset/modelo (hash/URL).</li>
+<li><strong><code>verify()</code> nativo do VCX-PACK</strong> + validação de offsets/hashes; <strong>policy de retenção</strong> e <strong>GC</strong> para packs grandes.</li>
+<li><strong>Catálogo de artefatos</strong> consultável (por <code>pack_cid</code>, <code>schema_id</code>, tags), com <strong>linhagem</strong> (quem/qual recibo gerou).</li>
+</ul>
+<h2 id="5-execucao-e-orquestracao-simplificadas">5) Execução e orquestração simplificadas</h2>
+<ul>
+<li><strong>Um binário (<code>aurea</code>)</strong>: API+UI+fila/leases+assinaturas+metrics; workers <strong>in-proc</strong> por padrão, QUIC/out-of-proc quando isolar.</li>
+<li><strong>Leases no redb</strong> com reassign automático; idempotência <code>(tenant, topic, idem_key)</code> preenchida por hash do plano se ausente.</li>
+<li><strong>Estados padronizados</strong> num stream: <code>accepted → assigned → progress{stage} → result|fail{code}</code> com <strong>tempos por etapa</strong>.</li>
+</ul>
+<h2 id="6-operador-conversacional-llm-com-contratos">6) Operador Conversacional (LLM) com contratos</h2>
+<ul>
+<li><strong>Duas etapas</strong>: <code>:propose</code> → <strong>PlanCard</strong> (DAG, SLOs, custos, policy_trace) → <strong>Confirmar</strong> → <code>:commit</code>.</li>
+<li><strong>Auto-reparo N=2</strong> para slots; se falhar, pedir <strong>só</strong> os campos faltantes (lista curta).</li>
+<li><strong>Idempotência por plano</strong>: <code>idem_key = blake3(dag_canon)</code>; repetir “OK” não duplica.</li>
+</ul>
+<h2 id="7-observabilidade-e-slos-operacionais">7) Observabilidade e SLOs operacionais</h2>
+<ul>
+<li><strong>Métricas SRE</strong>: <code>ttft_ms</code>, <code>ttr_ms</code>, <code>queue_depth</code>, <code>reassigns</code>, <code>error_rate{code}</code>, <code>stage_time_ms{stage}</code>.</li>
+<li><strong>Exports Arrow/Parquet</strong> e consultas DataFusion; <strong>amostras de recibos</strong> para auditoria.</li>
+<li><strong>Orçamentos em tempo real</strong>: mostrar no PlanCard e emitir alerta quando excedidos.</li>
+</ul>
+<h2 id="8-publicacao-e-citabilidade">8) Publicação e citabilidade</h2>
+<ul>
+<li><strong>DOI opcional</strong> para packs/execuções (integração OSF/Figshare/Zenodo) via botão “Publicar” no recibo.</li>
+<li><strong>Manifesto de citação</strong> (CITATION.cff/RO-Crate) gerado automaticamente com autores, versão e <code>receipt_cid</code>.</li>
+</ul>
+<h2 id="9-testes-ci-e-hardening">9) Testes, CI e hardening</h2>
+<ul>
+<li><strong>Testes de determinismo</strong> por domínio (ciência/HDL bit-a-bit; mídia com thresholds fixos).</li>
+<li><strong>Chaos/staging</strong> com latência/falha/kill para validar reassign e SLOs.</li>
+<li><strong>Compatibilidade GPU</strong>: lista de versões/flags que garantem determinismo (ex.: desativar kernels não determinísticos quando exigido).</li>
+</ul>
+<hr />
+<h1 id="prioridade-pratica-o-que-entrar-agora">Prioridade prática (o que entrar agora)</h1>
+<h3 id="p0-base-impossivel-de-quebrar">P0 — Base “impossível de quebrar”</h3>
+<ol>
+<li><strong>Assinatura de recibos + Merkle diário</strong></li>
+<li><strong>Canonical JSON + idempotência por plano</strong></li>
+<li><strong>Policy no <code>:propose</code> + DUAL_CONTROL</strong></li>
+<li><strong>Verificação VCX-PACK (<code>verify()</code>)</strong></li>
+<li><strong>PlanCard com SLOs/custos/policy_trace</strong></li>
+</ol>
+<h3 id="p1-interop-e-dados">P1 — Interop e dados</h3>
+<ol>
+<li><strong>Export RO-Crate (incl. Run)</strong> junto do Receipt</li>
+<li><strong>Referências DVC/DataLad no recibo</strong></li>
+<li><strong>Adapters de leitura de CWL/Snakemake → DAG ÁUREA</strong></li>
+</ol>
+<h3 id="p2-operacao-e-sre">P2 — Operação e SRE</h3>
+<ol>
+<li><strong>Métricas SRE completas + exports Parquet</strong></li>
+<li><strong>Chaos/staging + testes de determinismo automatizados</strong></li>
+</ol>
+<hr />
+<h2 id="onde-encaixa-no-monorepo">Onde encaixa no monorepo</h2>
+<ul>
+<li><code>core/</code>: canonical JSON, tipos <code>Intent/PlanPreview/CommitRequest</code>.</li>
+<li><code>receipts/</code> (ou dentro do binário): assinatura, Merkle, <code>verify()</code> de assinatura.</li>
+<li><code>artifacts/vcx_pack/</code>: <code>verify()</code>, mapeamento para RO-Crate.</li>
+<li><code>runtime/</code>: leases, tempos por etapa, roteamento por <code>topic</code>.</li>
+<li><code>plugins/op_llm_json/</code>: <code>:propose → PlanCard → :commit</code> com auto-reparo.</li>
+<li><code>ui_web/</code>: <strong>PlanCard</strong> + “📜 Recibo” com download/verify/export/DOI.</li>
+<li><code>bus/</code> (ou <code>aurea</code>): endpoints <code>/v1/capabilities</code>, <code>/v1/oc/*</code>, <code>/v1/export</code>, <code>/v1/anchors/*</code>.</li>
+</ul>
+<hr />
+<h2 id="aceite-minimo-para-cada-item">Aceite mínimo para cada item</h2>
+<ul>
+<li><strong>Recibo assinado</strong>: <code>signatures[].alg=Ed25519</code>, <code>kid</code> válido, <code>verify_receipt()</code> retorna OK.</li>
+<li><strong>Merkle</strong>: <code>anchors/YYYY-MM-DD.json</code> com root e lista de <code>receipt_cid</code>.</li>
+<li><strong>PlanCard</strong>: mostra <code>policy_trace</code>, SLOs (TTFT/TTR), custos e <strong>Confirmar/Agendar/Editar</strong>.</li>
+<li><strong>RO-Crate</strong>: arquivo <code>ro-crate-metadata.json</code> alinhado ao pack; <code>run</code> presente quando houver execução.</li>
+<li><strong>Determinismo</strong>: replays do mesmo recibo geram <strong>hash(es) idênticos</strong> (ou dentro do tolerance configurado/registrado).</li>
+</ul>
+<p>Se topar, já abro os épicos: <strong>P0-Assinaturas+Merkle</strong>, <strong>P0-Canonical+Idempotência</strong>, <strong>P0-Policy-Propose+DUAL_CONTROL</strong>, <strong>P0-PlanCard</strong>, <strong>P0-VCX-PACK Verify</strong> — e deixo os contratos/rotas prontos para o OC e para o export RO-Crate.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-right" title="Home">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+      <span><a href=".." style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

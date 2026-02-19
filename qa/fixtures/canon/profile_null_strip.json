@@ -1,0 +1,13 @@
+[
+  {
+    "profile": {
+      "null_strip": true,
+      "num_norm": "strict"
+    },
+    "in": {
+      "a": null,
+      "b": 1
+    },
+    "out": "{\"b\":1}"
+  }
+]

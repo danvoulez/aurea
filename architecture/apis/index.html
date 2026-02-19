@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>APIs - AUREA Docs</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "APIs";
+        var mkdocs_page_input_path = "architecture/apis.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> AUREA Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ProjetoFinal/">Projeto Final</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../charter/project_charter/">Charter</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../sow/statement_of_work/">SoW</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../prd/prd/">PRD</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Architecture</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">APIs</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#oc-operador-conversacional">OC (Operador Conversacional)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#versionamento-de-api">Versionamento de API</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#catalogo-de-erros-api">Catálogo de Erros (API)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rate-limits-e-cabecalhos-recomendados">Rate limits e cabeçalhos recomendados</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#export-detalhes-de-saida">Export (detalhes de saída)</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../oc_spec/">OC Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error_codes/">Errors</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../ux/plan_card_spec/">PlanCard</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../ux/microcopy/">Microcopy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../ux/checklist_pr10/">Checklist PR-10</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../security/security_privacy/">Security</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Runbook</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../runbook/operations/">Operations</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../runbook/incidents/">Incidents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../runbook/backup_restore/">Backup/Restore</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../qa/strategy/">QA</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../qa/canon_fixtures/">QA Canon Fixtures</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../slo/slis_slos/">SLO</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Interop</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../interop/ro_crate_mapping/">Mapping</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../interop/data_refs/">Data Refs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../interop/ro_crate_examples/">Examples</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../governance/contributing/">Governance</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">AUREA Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Architecture</li>
+      <li class="breadcrumb-item active">APIs</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="apis-principais-mvp">APIs Principais (MVP)</h1>
+<ul>
+<li><code>POST /v1/work</code> — enfileira WorkUnit (idempotência por idem_key/plan_hash)</li>
+<li><code>GET /v1/stream?topic=…</code> — SSE de estados</li>
+<li><code>GET /v1/receipts/{cid}</code> — retorna Receipt</li>
+<li><code>POST /v1/verify/receipt</code> — verifica assinatura</li>
+<li><code>GET /v1/metrics</code> — Prometheus</li>
+<li><code>POST /v1/export</code> — Parquet/Arrow/RO-Crate</li>
+</ul>
+<h2 id="oc-operador-conversacional">OC (Operador Conversacional)</h2>
+<ul>
+<li><code>GET /v1/capabilities</code></li>
+<li><code>GET /v1/schema/{schema_id}/{v}</code></li>
+<li><code>POST /v1/oc/parse_intent</code></li>
+<li><code>POST /v1/oc/plan_preview</code></li>
+<li><code>POST /v1/oc/commit</code></li>
+</ul>
+<h2 id="versionamento-de-api">Versionamento de API</h2>
+<ul>
+<li>SemVer no header: <code>X-Aurea-Api: 1.0</code></li>
+<li>Quebra: nova rota <code>/v2/*</code> e <code>@ver</code> nos contratos.</li>
+</ul>
+<h2 id="catalogo-de-erros-api">Catálogo de Erros (API)</h2>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>http</th>
+<th>descrição</th>
+<th>ação recomendada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SCHEMA_INVALID</td>
+<td>422</td>
+<td>payload inválido</td>
+<td>corrigir campos faltantes</td>
+</tr>
+<tr>
+<td>POLICY_BLOCKED</td>
+<td>403</td>
+<td>bloqueado por policy</td>
+<td>revisar policy_trace</td>
+</tr>
+<tr>
+<td>DUAL_CONTROL_REQUIRED</td>
+<td>403</td>
+<td>confirmação adicional</td>
+<td>enviar confirm_phrase</td>
+</tr>
+<tr>
+<td>IDEM_DUPLICATE</td>
+<td>200</td>
+<td>job idêntico já executado</td>
+<td>usar recibo retornado</td>
+</tr>
+<tr>
+<td>LEASE_EXPIRED</td>
+<td>409</td>
+<td>worker perdeu lease</td>
+<td>reenfileirar automaticamente</td>
+</tr>
+</tbody>
+</table>
+<h2 id="rate-limits-e-cabecalhos-recomendados">Rate limits e cabeçalhos recomendados</h2>
+<ul>
+<li>429 para excesso por tenant/tópico</li>
+<li>Cabeçalhos: <code>X-Aurea-Api: 1.0</code>, <code>X-Request-Id</code>, <code>Retry-After</code></li>
+</ul>
+<h2 id="export-detalhes-de-saida">Export (detalhes de saída)</h2>
+<ul>
+<li><code>format=parquet</code> → arquivo <code>./exports/aurea-export-&lt;ts&gt;.parquet</code></li>
+<li><code>format=arrow</code> → arquivo <code>./exports/aurea-export-&lt;ts&gt;.arrow</code> (Arrow IPC file)</li>
+<li><code>format=ro-crate</code> → diretório <code>./exports/aurea-export-&lt;ts&gt;-rocrate/</code> com:</li>
+<li><code>ro-crate-metadata.json</code></li>
+<li><code>receipts.json</code></li>
+<li>Resposta: <code>{status, format, records, path}</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../overview/" class="btn btn-neutral float-left" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../oc_spec/" class="btn btn-neutral float-right" title="OC Spec">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../overview/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../oc_spec/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
