@@ -145,6 +145,16 @@
 <li>Prometheus em <code>/v1/metrics</code></li>
 <li>Exports em <code>/v1/export</code> (Parquet/Arrow)</li>
 </ul>
+<h2 id="regras-slo-prometheus">Regras SLO (Prometheus)</h2>
+<ul>
+<li>Arquivo de regras: <code>configs/prometheus/aurea-alerts.yml</code></li>
+<li><code>AureaTTFTP95High</code>:
+  <code>histogram_quantile(0.95, sum(rate(ttft_ms_bucket[15m])) by (le)) &gt; 4000</code></li>
+<li><code>AureaTTRP95High</code>:
+  <code>histogram_quantile(0.95, sum(rate(ttr_ms_bucket[15m])) by (le)) &gt; 9000</code></li>
+<li><code>AureaErrorRateHigh</code>:
+  <code>max_over_time(error_rate{code="runtime_fail"}[10m]) &gt; 0.02</code></li>
+</ul>
               
             </div>
           </div><footer>

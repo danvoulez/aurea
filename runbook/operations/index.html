@@ -158,6 +158,7 @@
 <li>Retenção (dry-run): <code>aurea retention receipts --db ./aurea.redb --older-than-days 30</code></li>
 <li>Retenção (apply): <code>aurea retention receipts --db ./aurea.redb --older-than-days 30 --apply</code></li>
 <li>Backups: snapshots de redb + exports Parquet</li>
+<li>Alertas SLO: carregar <code>configs/prometheus/aurea-alerts.yml</code> no Prometheus (<code>promtool check rules</code> + <code>/-/reload</code>)</li>
 </ul>
 <h2 id="supervisor-pmdaemon">Supervisor (PMDaemon)</h2>
 <ul>
