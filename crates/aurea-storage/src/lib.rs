@@ -68,6 +68,12 @@ pub struct QueueMetrics {
     pub ttr_bucket_counts: Vec<(u64, u64)>,
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub struct RetentionPurgeReport {
+    pub deleted_receipts: usize,
+    pub deleted_idem_keys: usize,
+}
+
 #[derive(Clone)]
 pub struct RedbStore {
     db: Arc<Database>,
@@ -396,6 +402,47 @@ impl RedbStore {
             out.push(receipt);
         }
         Ok(out)
+    }
+
+    pub fn purge_receipts(&self, receipts: &[Receipt]) -> Result<RetentionPurgeReport> {
+        if receipts.is_empty() {
+            return Ok(RetentionPurgeReport::default());
+        }
+
+        let write = self.db.begin_write().context("begin retention tx failed")?;
+        let mut report = RetentionPurgeReport::default();
+
+        {
+            let mut table = write.open_table(RECEIPTS).context("open receipts failed")?;
+            for receipt in receipts {
+                if table
+                    .remove(receipt.cid.as_str())
+                    .context("remove receipt failed")?
+                    .is_some()
+                {
+                    report.deleted_receipts += 1;
+                }
+            }
+        }
+
+        {
+            let mut idem = write
+                .open_table(IDEM_KEYS)
+                .context("open idem_keys failed")?;
+            for receipt in receipts {
+                let key = idem_lookup_key(&receipt.tenant, &receipt.topic, &receipt.idem_key);
+                if idem
+                    .remove(key.as_str())
+                    .context("remove idem key failed")?
+                    .is_some()
+                {
+                    report.deleted_idem_keys += 1;
+                }
+            }
+        }
+
+        write.commit().context("commit retention tx failed")?;
+        Ok(report)
     }
 
     pub fn increment_status_counter(&self, status: WorkStatus) -> Result<()> {
