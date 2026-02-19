@@ -87,6 +87,10 @@
               <ul class="current">
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Operations</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#supervisor-pmdaemon">Supervisor (PMDaemon)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#teste-manual-pmdaemon">Teste manual PMDaemon</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#backup-transacional-recomendado">Backup transacional (recomendado)</a>
     </li>
     </ul>
@@ -151,6 +155,25 @@
 <li>Keys: <code>aurea keys rotate</code></li>
 <li>Backups: snapshots de redb + exports Parquet</li>
 </ul>
+<h2 id="supervisor-pmdaemon">Supervisor (PMDaemon)</h2>
+<ul>
+<li>Start:</li>
+<li><code>aurea-pmdaemon --cmd target/debug/aurea --arg0 serve --listen 0.0.0.0:8080 --db ./aurea.redb --keys-dir ./keys</code></li>
+<li>Health defaults:</li>
+<li><code>health_url=http://127.0.0.1:&lt;port&gt;/healthz</code></li>
+<li><code>health_grace_ms=5000</code>, <code>health_interval_ms=1500</code>, <code>health_timeout_ms=2000</code></li>
+<li><code>max_consecutive_health_failures=3</code></li>
+<li>Restart/backoff:</li>
+<li>backoff exponencial (1s, 2s, 4s, ...) com teto de 30s</li>
+<li>rotação de <code>aurea.out.log</code> e <code>aurea.err.log</code> a cada restart</li>
+</ul>
+<h2 id="teste-manual-pmdaemon">Teste manual PMDaemon</h2>
+<ol>
+<li>Subir <code>aurea-pmdaemon</code> apontando para um <code>db</code> temporário.</li>
+<li>Confirmar <code>/healthz</code> respondendo em 200.</li>
+<li>Forçar falha no child (kill do processo <code>aurea</code>) e verificar restart com backoff.</li>
+<li>Simular health inválido (<code>--health-url</code> incorreto) e verificar restart por <code>max_consecutive_health_failures</code>.</li>
+</ol>
 <h2 id="backup-transacional-recomendado">Backup transacional (recomendado)</h2>
 <p>1) Pausar ingest (modo leitura): <code>aurea serve --read-only</code> ou flag admin
 2) Executar snapshot do redb
