@@ -1,0 +1,28 @@
+site_name: AUREA Docs
+nav:
+  - Home: README.md
+  - Charter: charter/project_charter.md
+  - SoW: sow/statement_of_work.md
+  - PRD: prd/prd.md
+  - Architecture:
+    - Overview: architecture/overview.md
+    - APIs: architecture/apis.md
+    - OC Spec: architecture/oc_spec.md
+    - Errors: architecture/error_codes.md
+  - UX:
+    - PlanCard: ux/plan_card_spec.md
+    - Microcopy: ux/microcopy.md
+    - Checklist PR-10: ux/checklist_pr10.md
+  - Security: security/security_privacy.md
+  - Runbook:
+    - Operations: runbook/operations.md
+    - Incidents: runbook/incidents.md
+    - Backup/Restore: runbook/backup_restore.md
+  - QA: qa/strategy.md
+  - SLO: slo/slis_slos.md
+  - Interop:
+    - Mapping: interop/ro_crate_mapping.md
+    - Data Refs: interop/data_refs.md
+    - Examples: interop/ro_crate_examples/README.md
+  - Governance: governance/contributing.md
+theme: readthedocs

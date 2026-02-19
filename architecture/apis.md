@@ -1,0 +1,34 @@
+# APIs Principais (MVP)
+
+- `POST /v1/work` — enfileira WorkUnit (idempotência por idem_key/plan_hash)
+- `GET /v1/stream?topic=…` — SSE de estados
+- `GET /v1/receipts/{cid}` — retorna Receipt
+- `POST /v1/verify/receipt` — verifica assinatura
+- `GET /v1/metrics` — Prometheus
+- `POST /v1/export` — Parquet/Arrow/RO-Crate
+
+## OC (Operador Conversacional)
+- `GET /v1/capabilities`
+- `GET /v1/schema/{schema_id}/{v}`
+- `POST /v1/oc/parse_intent`
+- `POST /v1/oc/plan_preview`
+- `POST /v1/oc/commit`
+
+
+## Versionamento de API
+- SemVer no header: `X-Aurea-Api: 1.0`
+- Quebra: nova rota `/v2/*` e `@ver` nos contratos.
+
+## Catálogo de Erros (API)
+| code | http | descrição | ação recomendada |
+|---|---|---|---|
+| SCHEMA_INVALID | 422 | payload inválido | corrigir campos faltantes |
+| POLICY_BLOCKED | 403 | bloqueado por policy | revisar policy_trace |
+| DUAL_CONTROL_REQUIRED | 403 | confirmação adicional | enviar confirm_phrase |
+| IDEM_DUPLICATE | 200 | job idêntico já executado | usar recibo retornado |
+| LEASE_EXPIRED | 409 | worker perdeu lease | reenfileirar automaticamente |
+
+
+## Rate limits e cabeçalhos recomendados
+- 429 para excesso por tenant/tópico
+- Cabeçalhos: `X-Aurea-Api: 1.0`, `X-Request-Id`, `Retry-After`

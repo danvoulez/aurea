@@ -1,0 +1,70 @@
+{
+  "pt": {
+    "buttons": {
+      "confirm": "Confirmar",
+      "edit": "Editar",
+      "schedule": "Agendar",
+      "verify": "Verificar",
+      "repeat": "Repetir"
+    },
+    "labels": {
+      "plan": "Plano",
+      "receipt": "Recibo",
+      "policy_trace": "Políticas",
+      "local_only": "Executa local",
+      "costs": "Custos",
+      "slos": "SLOs"
+    },
+    "states": {
+      "empty": "Envie os detalhes ou escolha um template.",
+      "running": "Seu job está processando.",
+      "success": "Pronto! Recibo assinado.",
+      "error": "Não deu certo.\nVeja os detalhes."
+    },
+    "errors": {
+      "SCHEMA_INVALID": "Faltam informações. Complete os campos destacados.",
+      "POLICY_BLOCKED": "Este plano viola uma política. Veja as regras aplicadas.",
+      "DUAL_CONTROL_REQUIRED": "Confirmação adicional é necessária para continuar.",
+      "PLAN_CONFLICT": "O plano mudou. Atualize o cartão e confirme novamente.",
+      "IDEM_DUPLICATE": "Execução idêntica já existe. Usando o recibo anterior."
+    },
+    "tooltips": {
+      "policy_trace": "Regras avaliadas antes da execução.",
+      "local_only": "Executa estritamente no ambiente local."
+    }
+  },
+  "en": {
+    "buttons": {
+      "confirm": "Confirm",
+      "edit": "Edit",
+      "schedule": "Schedule",
+      "verify": "Verify",
+      "repeat": "Repeat"
+    },
+    "labels": {
+      "plan": "Plan",
+      "receipt": "Receipt",
+      "policy_trace": "Policies",
+      "local_only": "Local-only",
+      "costs": "Costs",
+      "slos": "SLOs"
+    },
+    "states": {
+      "empty": "Provide details or pick a template.",
+      "running": "Your job is running.",
+      "success": "Done! Signed receipt below.",
+      "error": "It didn’t work this time.\nSee details."
+    },
+    "errors": {
+      "SCHEMA_INVALID": "Missing info. Please complete the highlighted fields.",
+      "POLICY_BLOCKED": "This plan violates a policy. See applied rules.",
+      "DUAL_CONTROL_REQUIRED": "Additional confirmation is required.",
+      "PLAN_CONFLICT": "Plan changed. Refresh the card and confirm again.",
+      "IDEM_DUPLICATE": "Identical run exists. Using previous receipt."
+    },
+    "tooltips": {
+      "policy_trace": "Rules evaluated before execution.",
+      "local_only": "Runs strictly on local environment."
+    }
+  }
+}
