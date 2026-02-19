@@ -146,4 +146,75 @@ mod tests {
         let decision = policy.evaluate(&json!({"topic":"oc:commit","payload":{}}));
         assert!(decision.require_dual_control);
     }
+
+    #[test]
+    fn chat_budget_exceeded_is_blocked() {
+        let policy = DefaultPolicy;
+        // Construct a payload that token_estimate will count as > 4000 tokens
+        let large_text = "word ".repeat(4500);
+        let decision = policy.evaluate(&json!({
+            "topic": "chat:answer",
+            "payload": {"prompt": large_text}
+        }));
+        assert!(
+            decision.blocked,
+            "expected chat budget to be exceeded and blocked"
+        );
+        let blocked_rule = decision
+            .trace
+            .iter()
+            .any(|e| e.rule == "quotas_chat_enforced" && !e.ok);
+        assert!(blocked_rule, "expected quotas_chat_enforced rule in trace");
+    }
+
+    #[test]
+    fn phone_field_forces_local_only() {
+        let policy = DefaultPolicy;
+        let decision = policy.evaluate(&json!({
+            "topic": "science:run",
+            "payload": {"phone": "+55-11-99999-0000", "data": "other"}
+        }));
+        assert!(matches!(decision.route, Route::LocalOnly));
+        let pii_rule = decision.trace.iter().any(|e| e.rule == "pii_local");
+        assert!(pii_rule, "expected pii_local rule in policy trace");
+    }
+
+    #[test]
+    fn ssn_nested_in_array_forces_local_only() {
+        let policy = DefaultPolicy;
+        let decision = policy.evaluate(&json!({
+            "topic": "science:run",
+            "payload": {
+                "records": [{"ssn": "123-45-6789"}, {"name": "Alice"}]
+            }
+        }));
+        assert!(matches!(decision.route, Route::LocalOnly));
+    }
+
+    #[test]
+    fn non_pii_non_commit_has_preferred_route() {
+        let policy = DefaultPolicy;
+        let decision = policy.evaluate(&json!({
+            "topic": "vcx:transcode",
+            "payload": {"codec": "av1", "width": 1920}
+        }));
+        assert!(matches!(decision.route, Route::Preferred));
+        assert!(!decision.blocked);
+        assert!(!decision.require_dual_control);
+    }
+
+    #[test]
+    fn policy_trace_is_populated_for_chat_topic() {
+        let policy = DefaultPolicy;
+        let decision = policy.evaluate(&json!({
+            "topic": "chat:ask",
+            "payload": {"q": "hello"}
+        }));
+        let has_quota_rule = decision.trace.iter().any(|e| e.rule == "quotas_chat");
+        assert!(
+            has_quota_rule,
+            "chat topic should have quotas_chat rule in trace"
+        );
+        assert_eq!(decision.budgets.tokens, Some(4000));
+    }
 }

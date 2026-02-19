@@ -43,7 +43,7 @@ use tracing::info;
 use uuid::Uuid;
 
 const MAX_INTENT_PAYLOAD_BYTES: usize = 256 * 1024;
-const DUAL_CONTROL_PHRASE: &str = "DUAL_CONTROL";
+const DUAL_CONTROL_PHRASE: &str = "Conferi e confirmo o plano.";
 const TENANT_RATE_LIMIT_PER_MINUTE: u32 = 120;
 const UX_EVENTS: [&str; 6] = [
     "open_plan_card",
@@ -1614,7 +1614,7 @@ async fn oc_commit(
             StatusCode::FORBIDDEN,
             api_error(
                 "DUAL_CONTROL_REQUIRED",
-                "confirm_phrase must be DUAL_CONTROL for this topic",
+                "confirm_phrase must be 'Conferi e confirmo o plano.' for this topic",
                 Some(json!({"topic": preview.intent.topic})),
             ),
         ));
