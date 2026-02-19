@@ -18,11 +18,15 @@ use aurea_policy::{DefaultPolicy, Policy, PolicyEntry as PolicyTraceEntry, Route
 use aurea_receipts::anchor_day;
 use aurea_runtime::{AcceptDisposition, ReceiptVerification, Runtime, RuntimeMetrics};
 use aurea_storage::RedbStore;
+use aurea_ui_web::{
+    Lang, PlanCardData, ReceiptArtifactView, ReceiptData, render_plan_card_html,
+    render_receipt_html,
+};
 use axum::extract::{Path as AxumPath, Query, Request, State};
 use axum::http::{HeaderMap, HeaderValue, StatusCode};
 use axum::middleware::{self, Next};
-use axum::response::Response;
 use axum::response::sse::{Event, KeepAlive, Sse};
+use axum::response::{Html, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use base64::Engine;
@@ -41,6 +45,14 @@ use uuid::Uuid;
 const MAX_INTENT_PAYLOAD_BYTES: usize = 256 * 1024;
 const DUAL_CONTROL_PHRASE: &str = "DUAL_CONTROL";
 const TENANT_RATE_LIMIT_PER_MINUTE: u32 = 120;
+const UX_EVENTS: [&str; 6] = [
+    "open_plan_card",
+    "edit_slot",
+    "confirm_commit",
+    "cancel",
+    "view_receipt",
+    "verify_receipt",
+];
 
 #[derive(Parser, Debug)]
 #[command(name = "aurea", version, about = "AUREA runtime binary")]
@@ -91,6 +103,7 @@ struct AppState {
     previews: Arc<RwLock<HashMap<String, StoredPreview>>>,
     schemas: Arc<HashMap<String, SchemaSpec>>,
     tenant_rate: Arc<RwLock<HashMap<String, TenantRateWindow>>>,
+    ux_events: Arc<RwLock<HashMap<String, u64>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -178,6 +191,16 @@ struct StreamQuery {
     topic: Option<String>,
     tenant: Option<String>,
     id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UiQuery {
+    lang: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct UxEventRequest {
+    event: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -419,6 +442,12 @@ async fn run_server(listen: String, db: String, keys_dir: String) -> Result<()> 
         previews: Arc::new(RwLock::new(HashMap::new())),
         schemas: Arc::new(default_schemas()),
         tenant_rate: Arc::new(RwLock::new(HashMap::new())),
+        ux_events: Arc::new(RwLock::new(
+            UX_EVENTS
+                .iter()
+                .map(|name| ((*name).to_string(), 0u64))
+                .collect(),
+        )),
     };
 
     let app = Router::new()
@@ -429,6 +458,9 @@ async fn run_server(listen: String, db: String, keys_dir: String) -> Result<()> 
         .route("/v1/verify/receipt", post(verify_receipt))
         .route("/v1/verify/pack", post(verify_pack))
         .route("/v1/anchors/{day}", get(anchor_for_day))
+        .route("/v1/ui/plan_card/{plan_hash}", get(ui_plan_card))
+        .route("/v1/ui/receipt/{cid}", get(ui_receipt))
+        .route("/v1/ux/event", post(ux_event))
         .route("/v1/metrics", get(metrics))
         .route("/v1/export", post(export_data))
         .route("/v1/capabilities", get(capabilities))
@@ -680,6 +712,7 @@ async fn verify_receipt(
         &receipt.signature.kid,
         &receipt.signature.public_key,
     );
+    bump_ux_event(&state, "verify_receipt").await;
 
     Ok(Json(map_verification(
         check,
@@ -804,12 +837,140 @@ async fn anchor_for_day(
     })))
 }
 
-async fn metrics(State(state): State<AppState>) -> Result<String, (StatusCode, Json<Value>)> {
-    let metrics = state.runtime.metrics_snapshot().map_err(internal_error)?;
-    Ok(render_prometheus(&metrics))
+async fn ui_plan_card(
+    State(state): State<AppState>,
+    AxumPath(plan_hash): AxumPath<String>,
+    Query(query): Query<UiQuery>,
+) -> Result<Html<String>, (StatusCode, Json<Value>)> {
+    let preview = {
+        let previews = state.previews.read().await;
+        previews.get(&plan_hash).cloned()
+    }
+    .ok_or_else(|| {
+        (
+            StatusCode::NOT_FOUND,
+            api_error(
+                "NOT_FOUND",
+                "plan preview not found",
+                Some(json!({"plan_hash": plan_hash})),
+            ),
+        )
+    })?;
+
+    bump_ux_event(&state, "open_plan_card").await;
+
+    let policy_trace = preview
+        .policy_trace
+        .iter()
+        .map(|entry| {
+            format!(
+                "{}: {}{}",
+                entry.rule,
+                entry.ok,
+                entry
+                    .detail
+                    .as_deref()
+                    .map(|d| format!(" ({d})"))
+                    .unwrap_or_default()
+            )
+        })
+        .collect::<Vec<_>>();
+
+    let lang = Lang::parse(query.lang.as_deref());
+    let html = render_plan_card_html(
+        &PlanCardData {
+            plan_hash,
+            dag_summary: format!("{} -> {}", preview.intent.schema_id, preview.intent.topic),
+            slos: "TTFT p95 <= 4s; TTR p95 <= 9s; error_rate < 2%".to_string(),
+            costs: None,
+            policy_trace,
+            local_only: matches!(preview.route, Route::LocalOnly),
+            warnings: Vec::new(),
+        },
+        lang,
+    )
+    .map_err(internal_error)?;
+
+    Ok(Html(html))
 }
 
-fn render_prometheus(metrics: &RuntimeMetrics) -> String {
+async fn ui_receipt(
+    State(state): State<AppState>,
+    AxumPath(cid): AxumPath<String>,
+    Query(query): Query<UiQuery>,
+) -> Result<Html<String>, (StatusCode, Json<Value>)> {
+    let receipt = state
+        .runtime
+        .get_receipt(&cid)
+        .map_err(internal_error)?
+        .ok_or_else(|| {
+            (
+                StatusCode::NOT_FOUND,
+                api_error("NOT_FOUND", "receipt not found", Some(json!({"cid": cid}))),
+            )
+        })?;
+
+    let verify = state
+        .runtime
+        .verify_receipt(&receipt)
+        .map_err(internal_error)?;
+    bump_ux_event(&state, "view_receipt").await;
+
+    let lang = Lang::parse(query.lang.as_deref());
+    let html = render_receipt_html(
+        &ReceiptData {
+            cid: receipt.cid.clone(),
+            signature_ok: verify.ok,
+            anchor_href: Some(format!("/v1/anchors/{}", receipt.created_at.date_naive())),
+            artifacts: receipt
+                .artifacts
+                .iter()
+                .map(|artifact| ReceiptArtifactView {
+                    cid: artifact.cid.clone(),
+                    path: artifact.path.clone(),
+                    size_bytes: artifact.size_bytes,
+                })
+                .collect(),
+        },
+        lang,
+    )
+    .map_err(internal_error)?;
+
+    Ok(Html(html))
+}
+
+async fn ux_event(
+    State(state): State<AppState>,
+    Json(req): Json<UxEventRequest>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    if !UX_EVENTS.contains(&req.event.as_str()) {
+        return Err((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            api_error(
+                "SCHEMA_INVALID",
+                "unknown UX event",
+                Some(json!({"event": req.event, "allowed": UX_EVENTS})),
+            ),
+        ));
+    }
+
+    bump_ux_event(&state, &req.event).await;
+    Ok(Json(json!({"status":"ok","event": req.event})))
+}
+
+async fn bump_ux_event(state: &AppState, event: &str) {
+    let mut events = state.ux_events.write().await;
+    let counter = events.entry(event.to_string()).or_insert(0);
+    *counter = counter.saturating_add(1);
+}
+
+async fn metrics(State(state): State<AppState>) -> Result<String, (StatusCode, Json<Value>)> {
+    let metrics = state.runtime.metrics_snapshot().map_err(internal_error)?;
+    let ux_events = state.ux_events.read().await.clone();
+    Ok(render_prometheus(&metrics, &ux_events))
+}
+
+fn render_prometheus(metrics: &RuntimeMetrics, ux_events: &HashMap<String, u64>) -> String {
     let mut out = String::new();
 
     out.push_str("# HELP queue_depth Current ready queue depth.\n");
@@ -869,15 +1030,11 @@ fn render_prometheus(metrics: &RuntimeMetrics) -> String {
 
     out.push_str("# HELP ux_events_total UX telemetry events.\n");
     out.push_str("# TYPE ux_events_total counter\n");
-    for event in [
-        "open_plan_card",
-        "edit_slot",
-        "confirm_commit",
-        "cancel",
-        "view_receipt",
-        "verify_receipt",
-    ] {
-        out.push_str(&format!("ux_events_total{{event=\"{event}\"}} 0\n"));
+    let mut keys = ux_events.keys().cloned().collect::<Vec<_>>();
+    keys.sort();
+    for event in keys {
+        let value = ux_events.get(&event).copied().unwrap_or(0);
+        out.push_str(&format!("ux_events_total{{event=\"{event}\"}} {value}\n"));
     }
 
     out
@@ -1230,6 +1387,8 @@ async fn plan_preview(
             ));
         }
 
+        bump_ux_event(&state, "edit_slot").await;
+
         return Ok(Json(PlanPreviewResponse {
             dag: json!({
                 "nodes": [],
@@ -1377,6 +1536,7 @@ async fn oc_commit(
             in_flight: true,
         },
     };
+    bump_ux_event(&state, "confirm_commit").await;
 
     Ok(Json(response))
 }

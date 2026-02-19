@@ -34,3 +34,4 @@ aurea-policy = { path = "../../crates/aurea-policy" }
 aurea-receipts = { path = "../../crates/aurea-receipts" }
 aurea-runtime = { path = "../../crates/aurea-runtime" }
 aurea-storage = { path = "../../crates/aurea-storage" }
+aurea-ui-web = { path = "../../crates/aurea-ui-web" }
