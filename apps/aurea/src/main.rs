@@ -15,7 +15,7 @@ use aurea_artifacts_vcx_pack::verify as verify_pack_file;
 use aurea_core::{Receipt, WorkStatus, WorkUnit, cid_of, to_nrf_bytes};
 use aurea_plugins::{EchoPlugin, PluginRegistry, VcxWorkerPlugin};
 use aurea_policy::{DefaultPolicy, Policy, PolicyEntry as PolicyTraceEntry, Route};
-use aurea_receipts::anchor_day;
+use aurea_receipts::{anchor_day, save_anchor};
 use aurea_runtime::{AcceptDisposition, ReceiptVerification, Runtime, RuntimeMetrics};
 use aurea_storage::RedbStore;
 use aurea_ui_web::{
@@ -31,7 +31,7 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD as B64;
-use chrono::Utc;
+use chrono::{NaiveDate, Utc};
 use clap::{Parser, Subcommand};
 use ed25519_dalek::SigningKey;
 use parquet::arrow::ArrowWriter;
@@ -75,6 +75,18 @@ enum Command {
         #[command(subcommand)]
         command: KeysCommand,
     },
+    Runtime {
+        #[command(subcommand)]
+        command: RuntimeCommand,
+    },
+    Anchors {
+        #[command(subcommand)]
+        command: AnchorsCommand,
+    },
+    Retention {
+        #[command(subcommand)]
+        command: RetentionCommand,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -92,6 +104,40 @@ enum KeysCommand {
     List {
         #[arg(long, default_value = "./keys")]
         keys_dir: String,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+enum RuntimeCommand {
+    Sweep {
+        #[arg(long, default_value_t = false)]
+        expired: bool,
+        #[arg(long, default_value = "./aurea.redb")]
+        db: String,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+enum AnchorsCommand {
+    Rebuild {
+        #[arg(long)]
+        date: String,
+        #[arg(long, default_value = "./aurea.redb")]
+        db: String,
+        #[arg(long, default_value = "./anchors")]
+        out_dir: String,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+enum RetentionCommand {
+    Receipts {
+        #[arg(long, default_value = "./aurea.redb")]
+        db: String,
+        #[arg(long, default_value_t = 30)]
+        older_than_days: i64,
+        #[arg(long, default_value_t = false)]
+        apply: bool,
     },
 }
 
@@ -390,6 +436,9 @@ async fn main() -> Result<()> {
             keys_dir,
         } => run_server(listen, db, keys_dir).await,
         Command::Keys { command } => run_keys_command(command),
+        Command::Runtime { command } => run_runtime_command(command),
+        Command::Anchors { command } => run_anchors_command(command),
+        Command::Retention { command } => run_retention_command(command),
     }
 }
 
@@ -418,6 +467,96 @@ fn run_keys_command(command: KeysCommand) -> Result<()> {
                     key.kid,
                     key.status,
                     key.revoked_at.as_deref().unwrap_or("-")
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+fn run_runtime_command(command: RuntimeCommand) -> Result<()> {
+    match command {
+        RuntimeCommand::Sweep { expired, db } => {
+            if !expired {
+                return Err(anyhow!("MVP only supports `aurea runtime sweep --expired`"));
+            }
+            let store = RedbStore::open(&db)?;
+            let moved = store.reassign_expired_leases()?;
+            println!("sweep complete: reassigned_expired={moved}");
+        }
+    }
+    Ok(())
+}
+
+fn run_anchors_command(command: AnchorsCommand) -> Result<()> {
+    match command {
+        AnchorsCommand::Rebuild { date, db, out_dir } => {
+            parse_day(&date)?;
+            let store = RedbStore::open(&db)?;
+            let receipts = store.list_receipts()?;
+            let cids: Vec<String> = receipts_for_day(&receipts, &date)
+                .into_iter()
+                .map(|r| r.cid.clone())
+                .collect();
+            let anchor = anchor_day(&date, &cids);
+
+            let out_dir = Path::new(&out_dir);
+            fs::create_dir_all(out_dir)
+                .with_context(|| format!("failed to create anchor directory {out_dir:?}"))?;
+            let path = out_dir.join(format!("{date}.json"));
+            save_anchor(&path, &anchor)?;
+
+            println!(
+                "anchor rebuilt: date={} count={} root={} path={}",
+                anchor.date,
+                anchor.count,
+                anchor.root,
+                path.display()
+            );
+        }
+    }
+    Ok(())
+}
+
+fn run_retention_command(command: RetentionCommand) -> Result<()> {
+    match command {
+        RetentionCommand::Receipts {
+            db,
+            older_than_days,
+            apply,
+        } => {
+            if older_than_days < 1 {
+                return Err(anyhow!("--older-than-days must be >= 1"));
+            }
+
+            let store = RedbStore::open(&db)?;
+            let receipts = store.list_receipts()?;
+            let cutoff = Utc::now() - chrono::Duration::days(older_than_days);
+            let candidates = receipts_older_than(&receipts, cutoff);
+
+            println!(
+                "retention receipts: total={} cutoff={} candidates={} mode={}",
+                receipts.len(),
+                cutoff.to_rfc3339(),
+                candidates.len(),
+                if apply { "apply" } else { "dry-run" }
+            );
+
+            for receipt in candidates.iter().take(20) {
+                println!(
+                    "candidate cid={} created_at={} tenant={} topic={}",
+                    receipt.cid, receipt.created_at, receipt.tenant, receipt.topic
+                );
+            }
+            if candidates.len() > 20 {
+                println!("... {} more candidates", candidates.len() - 20);
+            }
+
+            if apply {
+                let report = store.purge_receipts(&candidates)?;
+                println!(
+                    "retention applied: deleted_receipts={} deleted_idem_keys={}",
+                    report.deleted_receipts, report.deleted_idem_keys
                 );
             }
         }
@@ -1715,6 +1854,26 @@ fn status_name(status: WorkStatus) -> &'static str {
     }
 }
 
+fn parse_day(day: &str) -> Result<NaiveDate> {
+    NaiveDate::parse_from_str(day, "%Y-%m-%d")
+        .with_context(|| format!("invalid --date value `{day}`; expected YYYY-MM-DD"))
+}
+
+fn receipts_for_day<'a>(receipts: &'a [Receipt], day: &str) -> Vec<&'a Receipt> {
+    receipts
+        .iter()
+        .filter(|receipt| receipt.created_at.date_naive().to_string() == day)
+        .collect()
+}
+
+fn receipts_older_than(receipts: &[Receipt], cutoff: chrono::DateTime<Utc>) -> Vec<Receipt> {
+    receipts
+        .iter()
+        .filter(|receipt| receipt.created_at < cutoff)
+        .cloned()
+        .collect()
+}
+
 fn api_error(code: &str, message: &str, details: Option<Value>) -> Json<Value> {
     Json(json!({
         "error": {
@@ -1892,7 +2051,32 @@ fn internal_error_h(err: impl std::fmt::Display) -> (StatusCode, HeaderMap, Json
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::BTreeMap;
+
+    use chrono::{Duration, TimeZone};
     use uuid::Uuid;
+
+    fn make_receipt(cid: &str, created_at: chrono::DateTime<Utc>) -> Receipt {
+        Receipt {
+            cid: cid.to_string(),
+            work_id: Uuid::new_v4(),
+            tenant: "tenant".to_string(),
+            topic: "echo:test".to_string(),
+            status: WorkStatus::Done,
+            idem_key: format!("idem-{cid}"),
+            plan_hash: format!("plan-{cid}"),
+            policy_trace: vec![],
+            stage_time_ms: BTreeMap::new(),
+            artifacts: vec![],
+            created_at,
+            signature: aurea_core::ReceiptSignature {
+                alg: "ed25519".to_string(),
+                kid: "kid-1".to_string(),
+                public_key: "pk".to_string(),
+                signature: "sig".to_string(),
+            },
+        }
+    }
 
     #[test]
     fn missing_paths_detects_absent_fields() {
@@ -1941,6 +2125,31 @@ mod tests {
             Some(ExportFormat::RoCrate)
         ));
         assert!(ExportFormat::parse("csv").is_none());
+    }
+
+    #[test]
+    fn parse_day_requires_iso_date() {
+        assert!(parse_day("2026-02-19").is_ok());
+        assert!(parse_day("2026/02/19").is_err());
+    }
+
+    #[test]
+    fn receipts_helpers_filter_by_day_and_cutoff() {
+        let now = Utc
+            .with_ymd_and_hms(2026, 2, 19, 12, 0, 0)
+            .single()
+            .expect("valid fixed datetime");
+        let old = make_receipt("old", now - Duration::days(40));
+        let fresh = make_receipt("fresh", now - Duration::days(2));
+        let receipts = vec![old.clone(), fresh.clone()];
+
+        let by_day = receipts_for_day(&receipts, "2026-02-17");
+        assert_eq!(by_day.len(), 1);
+        assert_eq!(by_day[0].cid, "fresh");
+
+        let older = receipts_older_than(&receipts, now - Duration::days(30));
+        assert_eq!(older.len(), 1);
+        assert_eq!(older[0].cid, "old");
     }
 
     #[test]
