@@ -1,5 +1,6 @@
 site_name: AUREA Docs
 nav:
+  - Projeto Final: ProjetoFinal.md
   - Home: README.md
   - Charter: charter/project_charter.md
   - SoW: sow/statement_of_work.md
@@ -19,6 +20,7 @@ nav:
     - Incidents: runbook/incidents.md
     - Backup/Restore: runbook/backup_restore.md
   - QA: qa/strategy.md
+  - QA Canon Fixtures: qa/canon_fixtures.md
   - SLO: slo/slis_slos.md
   - Interop:
     - Mapping: interop/ro_crate_mapping.md
