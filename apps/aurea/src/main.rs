@@ -1,11 +1,15 @@
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::fs;
+use std::fs::File;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use anyhow::{Context, Result, anyhow};
+use arrow_array::{ArrayRef, RecordBatch, StringArray, UInt64Array};
+use arrow_ipc::writer::FileWriter as ArrowFileWriter;
+use arrow_schema::{DataType, Field, Schema};
 use async_stream::stream;
 use aurea_core::{Receipt, WorkStatus, WorkUnit, cid_of, to_nrf_bytes};
 use aurea_plugins::{EchoPlugin, PluginRegistry};
@@ -25,6 +29,7 @@ use base64::engine::general_purpose::STANDARD as B64;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
 use ed25519_dalek::SigningKey;
+use parquet::arrow::ArrowWriter;
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -237,6 +242,45 @@ struct ExportResponse {
     format: String,
     records: usize,
     path: String,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum ExportFormat {
+    Parquet,
+    Arrow,
+    RoCrate,
+}
+
+impl ExportFormat {
+    fn parse(value: &str) -> Option<Self> {
+        match value {
+            "parquet" => Some(Self::Parquet),
+            "arrow" => Some(Self::Arrow),
+            "ro-crate" => Some(Self::RoCrate),
+            _ => None,
+        }
+    }
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Parquet => "parquet",
+            Self::Arrow => "arrow",
+            Self::RoCrate => "ro-crate",
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ExportRow {
+    receipt_cid: String,
+    tenant: String,
+    topic: String,
+    status: String,
+    idem_key: String,
+    plan_hash: String,
+    created_at: String,
+    policy_trace_json: String,
+    artifacts_count: u64,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -796,8 +840,8 @@ async fn export_data(
     State(state): State<AppState>,
     Json(req): Json<ExportRequest>,
 ) -> Result<Json<ExportResponse>, (StatusCode, Json<Value>)> {
-    let format = req.format.to_lowercase();
-    if !matches!(format.as_str(), "parquet" | "arrow" | "ro-crate") {
+    let format_raw = req.format.to_lowercase();
+    let Some(format) = ExportFormat::parse(&format_raw) else {
         return Err((
             StatusCode::UNPROCESSABLE_ENTITY,
             api_error(
@@ -806,34 +850,183 @@ async fn export_data(
                 Some(json!({"format": req.format})),
             ),
         ));
-    }
+    };
 
     let mut receipts = state.runtime.list_receipts().map_err(internal_error)?;
     if let Some(topic) = req.topic {
         receipts.retain(|r| r.topic == topic);
     }
 
+    let rows = receipts
+        .iter()
+        .map(export_row_from_receipt)
+        .collect::<Vec<_>>();
+
     let export_dir = PathBuf::from("./exports");
     fs::create_dir_all(&export_dir).map_err(internal_error)?;
-    let stamp = Utc::now().format("%Y%m%d-%H%M%S");
-    let filename = format!("aurea-export-{stamp}.{}.json", format.replace('-', "_"));
-    let path = export_dir.join(filename);
-
-    let content = serde_json::to_vec_pretty(&json!({
-        "format": format,
-        "generated_at": Utc::now().to_rfc3339(),
-        "records": receipts.len(),
-        "receipts": receipts,
-    }))
-    .map_err(internal_error)?;
-    fs::write(&path, content).map_err(internal_error)?;
+    let stamp = Utc::now().format("%Y%m%d-%H%M%S").to_string();
+    let path = match format {
+        ExportFormat::Parquet => {
+            let path = export_dir.join(format!("aurea-export-{stamp}.parquet"));
+            write_parquet_export(&path, &rows).map_err(internal_error)?;
+            path
+        }
+        ExportFormat::Arrow => {
+            let path = export_dir.join(format!("aurea-export-{stamp}.arrow"));
+            write_arrow_export(&path, &rows).map_err(internal_error)?;
+            path
+        }
+        ExportFormat::RoCrate => {
+            let path = export_dir.join(format!("aurea-export-{stamp}-rocrate"));
+            write_rocrate_export(&path, &receipts).map_err(internal_error)?;
+            path
+        }
+    };
 
     Ok(Json(ExportResponse {
         status: "ok".to_string(),
-        format,
-        records: state.runtime.list_receipts().map_err(internal_error)?.len(),
+        format: format.as_str().to_string(),
+        records: rows.len(),
         path: path.display().to_string(),
     }))
+}
+
+fn export_row_from_receipt(receipt: &Receipt) -> ExportRow {
+    ExportRow {
+        receipt_cid: receipt.cid.clone(),
+        tenant: receipt.tenant.clone(),
+        topic: receipt.topic.clone(),
+        status: status_name(receipt.status).to_string(),
+        idem_key: receipt.idem_key.clone(),
+        plan_hash: receipt.plan_hash.clone(),
+        created_at: receipt.created_at.to_rfc3339(),
+        policy_trace_json: serde_json::to_string(&receipt.policy_trace)
+            .unwrap_or_else(|_| "[]".to_string()),
+        artifacts_count: receipt.artifacts.len() as u64,
+    }
+}
+
+fn export_schema() -> Arc<Schema> {
+    Arc::new(Schema::new(vec![
+        Field::new("receipt_cid", DataType::Utf8, false),
+        Field::new("tenant", DataType::Utf8, false),
+        Field::new("topic", DataType::Utf8, false),
+        Field::new("status", DataType::Utf8, false),
+        Field::new("idem_key", DataType::Utf8, false),
+        Field::new("plan_hash", DataType::Utf8, false),
+        Field::new("created_at", DataType::Utf8, false),
+        Field::new("policy_trace_json", DataType::Utf8, false),
+        Field::new("artifacts_count", DataType::UInt64, false),
+    ]))
+}
+
+fn export_record_batch(rows: &[ExportRow]) -> Result<RecordBatch> {
+    let schema = export_schema();
+
+    let cid_col = StringArray::from(
+        rows.iter()
+            .map(|r| r.receipt_cid.as_str())
+            .collect::<Vec<_>>(),
+    );
+    let tenant_col = StringArray::from(rows.iter().map(|r| r.tenant.as_str()).collect::<Vec<_>>());
+    let topic_col = StringArray::from(rows.iter().map(|r| r.topic.as_str()).collect::<Vec<_>>());
+    let status_col = StringArray::from(rows.iter().map(|r| r.status.as_str()).collect::<Vec<_>>());
+    let idem_col = StringArray::from(rows.iter().map(|r| r.idem_key.as_str()).collect::<Vec<_>>());
+    let plan_col = StringArray::from(
+        rows.iter()
+            .map(|r| r.plan_hash.as_str())
+            .collect::<Vec<_>>(),
+    );
+    let created_col = StringArray::from(
+        rows.iter()
+            .map(|r| r.created_at.as_str())
+            .collect::<Vec<_>>(),
+    );
+    let trace_col = StringArray::from(
+        rows.iter()
+            .map(|r| r.policy_trace_json.as_str())
+            .collect::<Vec<_>>(),
+    );
+    let artifacts_col =
+        UInt64Array::from(rows.iter().map(|r| r.artifacts_count).collect::<Vec<_>>());
+
+    let arrays: Vec<ArrayRef> = vec![
+        Arc::new(cid_col),
+        Arc::new(tenant_col),
+        Arc::new(topic_col),
+        Arc::new(status_col),
+        Arc::new(idem_col),
+        Arc::new(plan_col),
+        Arc::new(created_col),
+        Arc::new(trace_col),
+        Arc::new(artifacts_col),
+    ];
+
+    RecordBatch::try_new(schema, arrays).context("build export record batch")
+}
+
+fn write_parquet_export(path: &Path, rows: &[ExportRow]) -> Result<()> {
+    let batch = export_record_batch(rows)?;
+    let file = File::create(path).with_context(|| format!("create parquet file: {path:?}"))?;
+    let mut writer = ArrowWriter::try_new(file, batch.schema(), None).context("parquet writer")?;
+    writer.write(&batch).context("write parquet batch")?;
+    writer.close().context("close parquet writer")?;
+    Ok(())
+}
+
+fn write_arrow_export(path: &Path, rows: &[ExportRow]) -> Result<()> {
+    let batch = export_record_batch(rows)?;
+    let file = File::create(path).with_context(|| format!("create arrow file: {path:?}"))?;
+    let mut writer =
+        ArrowFileWriter::try_new(file, &batch.schema()).context("create arrow IPC writer")?;
+    writer.write(&batch).context("write arrow batch")?;
+    writer.finish().context("finish arrow writer")?;
+    Ok(())
+}
+
+fn write_rocrate_export(dir: &Path, receipts: &[Receipt]) -> Result<()> {
+    fs::create_dir_all(dir).with_context(|| format!("create ro-crate dir: {dir:?}"))?;
+    let generated_at = Utc::now().to_rfc3339();
+    let receipts_name = "receipts.json";
+    let receipts_path = dir.join(receipts_name);
+    let receipts_content =
+        serde_json::to_vec_pretty(receipts).context("serialize receipts for ro-crate")?;
+    fs::write(&receipts_path, receipts_content)
+        .with_context(|| format!("write ro-crate receipts: {receipts_path:?}"))?;
+
+    let metadata = json!({
+        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+                "about": {"@id": "./"}
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "name": "AUREA Export RO-Crate",
+                "datePublished": generated_at,
+                "hasPart": [{"@id": receipts_name}]
+            },
+            {
+                "@id": receipts_name,
+                "@type": "File",
+                "encodingFormat": "application/json",
+                "description": "AUREA receipts snapshot for audit/replay",
+                "contentSize": fs::metadata(&receipts_path).map(|m| m.len()).unwrap_or(0),
+            }
+        ]
+    });
+
+    let metadata_path = dir.join("ro-crate-metadata.json");
+    let metadata_content =
+        serde_json::to_vec_pretty(&metadata).context("serialize ro-crate metadata")?;
+    fs::write(&metadata_path, metadata_content)
+        .with_context(|| format!("write ro-crate metadata: {metadata_path:?}"))?;
+
+    Ok(())
 }
 
 async fn capabilities(State(state): State<AppState>) -> Json<Value> {
@@ -1449,6 +1642,7 @@ fn internal_error_h(err: impl std::fmt::Display) -> (StatusCode, HeaderMap, Json
 #[cfg(test)]
 mod tests {
     use super::*;
+    use uuid::Uuid;
 
     #[test]
     fn missing_paths_detects_absent_fields() {
@@ -1480,5 +1674,64 @@ mod tests {
         let (schema_id, v) = infer_schema(&req);
         assert_eq!(schema_id, "vcx.batch_transcode");
         assert_eq!(v, "1");
+    }
+
+    #[test]
+    fn export_format_parse_supports_all_mvp_formats() {
+        assert!(matches!(
+            ExportFormat::parse("parquet"),
+            Some(ExportFormat::Parquet)
+        ));
+        assert!(matches!(
+            ExportFormat::parse("arrow"),
+            Some(ExportFormat::Arrow)
+        ));
+        assert!(matches!(
+            ExportFormat::parse("ro-crate"),
+            Some(ExportFormat::RoCrate)
+        ));
+        assert!(ExportFormat::parse("csv").is_none());
+    }
+
+    #[test]
+    fn export_record_batch_has_expected_rows() {
+        let rows = vec![
+            ExportRow {
+                receipt_cid: "c1".to_string(),
+                tenant: "t".to_string(),
+                topic: "echo:test".to_string(),
+                status: "done".to_string(),
+                idem_key: "i1".to_string(),
+                plan_hash: "p1".to_string(),
+                created_at: Utc::now().to_rfc3339(),
+                policy_trace_json: "[]".to_string(),
+                artifacts_count: 0,
+            },
+            ExportRow {
+                receipt_cid: "c2".to_string(),
+                tenant: "t".to_string(),
+                topic: "echo:test".to_string(),
+                status: "fail".to_string(),
+                idem_key: "i2".to_string(),
+                plan_hash: "p2".to_string(),
+                created_at: Utc::now().to_rfc3339(),
+                policy_trace_json: "[{\"rule\":\"x\",\"ok\":true}]".to_string(),
+                artifacts_count: 1,
+            },
+        ];
+        let batch = export_record_batch(&rows).expect("record batch");
+        assert_eq!(batch.num_rows(), 2);
+        assert_eq!(batch.num_columns(), 9);
+    }
+
+    #[test]
+    fn rocrate_export_writes_metadata_and_receipts() {
+        let dir = std::env::temp_dir().join(format!("aurea-rocrate-test-{}", Uuid::new_v4()));
+        write_rocrate_export(&dir, &[]).expect("write ro-crate");
+        assert!(dir.join("ro-crate-metadata.json").exists());
+        assert!(dir.join("receipts.json").exists());
+        let _ = std::fs::remove_file(dir.join("ro-crate-metadata.json"));
+        let _ = std::fs::remove_file(dir.join("receipts.json"));
+        let _ = std::fs::remove_dir(dir);
     }
 }

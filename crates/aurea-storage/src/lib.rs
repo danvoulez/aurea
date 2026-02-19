@@ -217,8 +217,7 @@ impl RedbStore {
                 .open_table(READY_JOBS)
                 .context("open ready_jobs failed")?;
             let mut iter = ready.iter().context("iterate ready jobs failed")?;
-            iter
-                .next()
+            iter.next()
                 .transpose()
                 .context("read ready iterator entry failed")?
                 .map(|(key, value)| (key.value(), value.value().to_vec()))
