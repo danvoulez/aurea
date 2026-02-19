@@ -15,6 +15,11 @@
 - `POST /v1/oc/plan_preview`
 - `POST /v1/oc/commit`
 
+## UI/UX auxiliares (MVP)
+- `GET /v1/ui/plan_card/{plan_hash}?lang=pt|en` — HTML SSR (PlanCard)
+- `GET /v1/ui/receipt/{cid}?lang=pt|en` — HTML SSR (Recibo)
+- `POST /v1/ux/event` — incrementa `ux_events_total{event}`
+
 
 ## Versionamento de API
 - SemVer no header: `X-Aurea-Api: 1.0`
