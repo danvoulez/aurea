@@ -67,6 +67,8 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#oc-operador-conversacional">OC (Operador Conversacional)</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#uiux-auxiliares-mvp">UI/UX auxiliares (MVP)</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#versionamento-de-api">Versionamento de API</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#catalogo-de-erros-api">Catálogo de Erros (API)</a>
@@ -170,6 +172,12 @@
 <li><code>POST /v1/oc/parse_intent</code></li>
 <li><code>POST /v1/oc/plan_preview</code></li>
 <li><code>POST /v1/oc/commit</code></li>
+</ul>
+<h2 id="uiux-auxiliares-mvp">UI/UX auxiliares (MVP)</h2>
+<ul>
+<li><code>GET /v1/ui/plan_card/{plan_hash}?lang=pt|en</code> — HTML SSR (PlanCard)</li>
+<li><code>GET /v1/ui/receipt/{cid}?lang=pt|en</code> — HTML SSR (Recibo)</li>
+<li><code>POST /v1/ux/event</code> — incrementa <code>ux_events_total{event}</code></li>
 </ul>
 <h2 id="versionamento-de-api">Versionamento de API</h2>
 <ul>
