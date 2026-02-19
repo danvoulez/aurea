@@ -204,11 +204,14 @@ impl Runtime {
             Err(err) => (WorkStatus::Fail, Some(err.to_string())),
         };
 
-        let mut policy_trace = vec![PolicyEntry {
-            rule: "baseline_accept".to_string(),
-            ok: true,
-            detail: Some("work accepted into runtime".to_string()),
-        }];
+        let mut policy_trace = extract_policy_trace(&job.work.payload);
+        if policy_trace.is_empty() {
+            policy_trace.push(PolicyEntry {
+                rule: "baseline_accept".to_string(),
+                ok: true,
+                detail: Some("work accepted into runtime".to_string()),
+            });
+        }
         if let Some(d) = detail.clone() {
             policy_trace.push(PolicyEntry {
                 rule: "runtime_execute".to_string(),
@@ -265,7 +268,7 @@ impl Runtime {
             .idem_key
             .clone()
             .ok_or_else(|| anyhow!("queued job is missing idem_key"))?;
-        let plan_hash = job.work.plan_hash()?;
+        let plan_hash = extract_plan_hash(&job.work.payload).unwrap_or(job.work.plan_hash()?);
 
         let mut stage_time_ms = BTreeMap::new();
         stage_time_ms.insert("ttft_ms".to_string(), ttft_ms);
@@ -321,6 +324,10 @@ impl Runtime {
 
     pub fn get_receipt(&self, cid: &str) -> Result<Option<Receipt>> {
         self.store.get_receipt(cid)
+    }
+
+    pub fn list_receipts(&self) -> Result<Vec<Receipt>> {
+        self.store.list_receipts()
     }
 
     pub fn verify_receipt(&self, receipt: &Receipt) -> Result<ReceiptVerification> {
@@ -391,6 +398,24 @@ fn verify_signature(receipt: &Receipt) -> Result<bool> {
     Ok(verifying_key
         .verify(receipt.cid.as_bytes(), &signature)
         .is_ok())
+}
+
+fn extract_policy_trace(payload: &serde_json::Value) -> Vec<PolicyEntry> {
+    let Some(meta) = payload.get("_aurea_meta") else {
+        return Vec::new();
+    };
+    let Some(trace_value) = meta.get("policy_trace") else {
+        return Vec::new();
+    };
+    serde_json::from_value(trace_value.clone()).unwrap_or_default()
+}
+
+fn extract_plan_hash(payload: &serde_json::Value) -> Option<String> {
+    payload
+        .get("_aurea_meta")
+        .and_then(|v| v.get("plan_hash"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
 }
 
 #[derive(Debug, Clone)]

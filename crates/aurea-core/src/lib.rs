@@ -1,11 +1,16 @@
 use std::collections::BTreeMap;
 
-use blake3::Hasher;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Number, Value};
-use thiserror::Error;
 use uuid::Uuid;
+
+pub mod nrf;
+
+pub use nrf::canon::{
+    CanonError, canonical_json_string, canonical_json_string_with_profile, to_nrf_bytes,
+};
+pub use nrf::hash::cid_of;
+pub use nrf::types::{CanonProfile, NumNorm};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -24,12 +29,17 @@ pub struct WorkUnit {
     pub topic: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub idem_key: Option<String>,
-    pub payload: Value,
+    pub payload: serde_json::Value,
     pub submitted_at: DateTime<Utc>,
 }
 
 impl WorkUnit {
-    pub fn new(tenant: String, topic: String, idem_key: Option<String>, payload: Value) -> Self {
+    pub fn new(
+        tenant: String,
+        topic: String,
+        idem_key: Option<String>,
+        payload: serde_json::Value,
+    ) -> Self {
         Self {
             id: Uuid::new_v4(),
             tenant,
@@ -130,221 +140,17 @@ impl Receipt {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "snake_case")]
-pub enum NumNorm {
-    Strict,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq)]
-pub struct CanonProfile {
-    pub null_strip: bool,
-    pub num_norm: NumNorm,
-}
-
-impl Default for CanonProfile {
-    fn default() -> Self {
-        Self {
-            null_strip: false,
-            num_norm: NumNorm::Strict,
-        }
-    }
-}
-
-#[derive(Debug, Error)]
-pub enum CanonError {
-    #[error("value contains disallowed string marker: {0}")]
-    DisallowedString(String),
-    #[error("string contains disallowed lone surrogate escape: {0}")]
-    LoneSurrogateEscape(String),
-    #[error("found non-finite number")]
-    NonFiniteNumber,
-    #[error("failed to serialize canonical JSON: {0}")]
-    Serialize(#[from] serde_json::Error),
-}
-
-pub fn canonical_json_string(value: &Value) -> Result<String, CanonError> {
-    canonical_json_string_with_profile(value, CanonProfile::default())
-}
-
-pub fn canonical_json_string_with_profile(
-    value: &Value,
-    profile: CanonProfile,
-) -> Result<String, CanonError> {
-    let canon = canonicalize_value(value, profile)?;
-    Ok(serde_json::to_string(&canon)?)
-}
-
 pub fn cid_for<T: Serialize>(value: &T) -> Result<String, CanonError> {
     let raw = serde_json::to_value(value)?;
-    let canon = canonical_json_string(&raw)?;
-    let mut hasher = Hasher::new();
-    hasher.update(canon.as_bytes());
-    Ok(hasher.finalize().to_hex().to_string())
-}
-
-pub fn canonicalize_value(value: &Value, profile: CanonProfile) -> Result<Value, CanonError> {
-    match value {
-        Value::Object(obj) => {
-            let mut pairs: Vec<_> = obj.iter().collect();
-            pairs.sort_by(|(a, _), (b, _)| a.cmp(b));
-
-            let mut out = Map::new();
-            for (key, val) in pairs {
-                if profile.null_strip && val.is_null() {
-                    continue;
-                }
-                let canon = canonicalize_value(val, profile)?;
-                out.insert(key.clone(), canon);
-            }
-            Ok(Value::Object(out))
-        }
-        Value::Array(items) => {
-            let mut out = Vec::with_capacity(items.len());
-            for item in items {
-                out.push(canonicalize_value(item, profile)?);
-            }
-            Ok(Value::Array(out))
-        }
-        Value::String(s) => {
-            let normalized = normalize_string_escapes(s)?;
-            validate_string(&normalized)?;
-            Ok(Value::String(normalized))
-        }
-        Value::Number(n) => Ok(Value::Number(normalize_number(n)?)),
-        _ => Ok(value.clone()),
-    }
-}
-
-fn normalize_number(num: &Number) -> Result<Number, CanonError> {
-    if let Some(v) = num.as_i64() {
-        return Ok(Number::from(v));
-    }
-    if let Some(v) = num.as_u64() {
-        return Ok(Number::from(v));
-    }
-
-    let float = num.as_f64().ok_or(CanonError::NonFiniteNumber)?;
-    if !float.is_finite() {
-        return Err(CanonError::NonFiniteNumber);
-    }
-
-    if float == 0.0 {
-        return Ok(Number::from(0));
-    }
-
-    if float.fract() == 0.0 {
-        let integer = float as i128;
-        if integer >= i64::MIN as i128 && integer <= i64::MAX as i128 {
-            return Ok(Number::from(integer as i64));
-        }
-    }
-
-    Number::from_f64(float).ok_or(CanonError::NonFiniteNumber)
-}
-
-fn validate_string(s: &str) -> Result<(), CanonError> {
-    if matches!(s, "NaN" | "Infinity" | "-Infinity") {
-        return Err(CanonError::DisallowedString(s.to_string()));
-    }
-    Ok(())
-}
-
-fn normalize_string_escapes(s: &str) -> Result<String, CanonError> {
-    let chars: Vec<char> = s.chars().collect();
-    let mut out = String::with_capacity(s.len());
-    let mut i = 0usize;
-
-    while i < chars.len() {
-        if chars[i] != '\\' {
-            out.push(chars[i]);
-            i += 1;
-            continue;
-        }
-
-        i += 1;
-        if i >= chars.len() {
-            out.push('\\');
-            break;
-        }
-
-        match chars[i] {
-            '"' => out.push('"'),
-            '\\' => out.push('\\'),
-            '/' => out.push('/'),
-            'b' => out.push('\u{0008}'),
-            'f' => out.push('\u{000C}'),
-            'n' => out.push('\n'),
-            'r' => out.push('\r'),
-            't' => out.push('\t'),
-            'u' => {
-                let cp = parse_u_escape(&chars, i + 1)?;
-                i += 4;
-
-                if (0xD800..=0xDBFF).contains(&cp) {
-                    if i + 2 >= chars.len() || chars[i + 1] != '\\' || chars[i + 2] != 'u' {
-                        return Err(CanonError::LoneSurrogateEscape(s.to_string()));
-                    }
-                    let cp2 = parse_u_escape(&chars, i + 3)?;
-                    if !(0xDC00..=0xDFFF).contains(&cp2) {
-                        return Err(CanonError::LoneSurrogateEscape(s.to_string()));
-                    }
-                    i += 6;
-
-                    let high = (cp as u32) - 0xD800;
-                    let low = (cp2 as u32) - 0xDC00;
-                    let scalar = 0x10000 + ((high << 10) | low);
-                    if let Some(ch) = char::from_u32(scalar) {
-                        out.push(ch);
-                    } else {
-                        return Err(CanonError::LoneSurrogateEscape(s.to_string()));
-                    }
-                    continue;
-                }
-
-                if (0xDC00..=0xDFFF).contains(&cp) {
-                    return Err(CanonError::LoneSurrogateEscape(s.to_string()));
-                }
-
-                if let Some(ch) = char::from_u32(cp as u32) {
-                    out.push(ch);
-                } else {
-                    return Err(CanonError::LoneSurrogateEscape(s.to_string()));
-                }
-            }
-            other => {
-                out.push('\\');
-                out.push(other);
-            }
-        }
-        i += 1;
-    }
-
-    Ok(out)
-}
-
-fn parse_u_escape(chars: &[char], start: usize) -> Result<u16, CanonError> {
-    if start + 4 > chars.len() {
-        return Err(CanonError::LoneSurrogateEscape(
-            chars.iter().collect::<String>(),
-        ));
-    }
-
-    let mut out = 0u16;
-    for ch in &chars[start..start + 4] {
-        out <<= 4;
-        out |= ch
-            .to_digit(16)
-            .ok_or_else(|| CanonError::LoneSurrogateEscape(chars.iter().collect::<String>()))?
-            as u16;
-    }
-    Ok(out)
+    let bytes = to_nrf_bytes(raw, CanonProfile::default())?;
+    Ok(cid_of(&bytes))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde::Deserialize;
+    use serde_json::Value;
     use std::fs;
     use std::path::PathBuf;
 
@@ -433,6 +239,6 @@ mod tests {
             created_at: Utc::now(),
         };
         let cid = cid_for(&unsigned).unwrap();
-        assert_eq!(cid.len(), 64);
+        assert_eq!(cid.len(), 52);
     }
 }

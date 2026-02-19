@@ -1,0 +1,20 @@
+name: CI i18n
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  i18n:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check i18n keys
+        run: python .github/scripts/check_i18n_keys.py

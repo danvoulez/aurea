@@ -32,3 +32,11 @@
 ## Rate limits e cabeçalhos recomendados
 - 429 para excesso por tenant/tópico
 - Cabeçalhos: `X-Aurea-Api: 1.0`, `X-Request-Id`, `Retry-After`
+
+## Export (detalhes de saída)
+- `format=parquet` → arquivo `./exports/aurea-export-<ts>.parquet`
+- `format=arrow` → arquivo `./exports/aurea-export-<ts>.arrow` (Arrow IPC file)
+- `format=ro-crate` → diretório `./exports/aurea-export-<ts>-rocrate/` com:
+  - `ro-crate-metadata.json`
+  - `receipts.json`
+- Resposta: `{status, format, records, path}`

@@ -217,14 +217,10 @@ impl RedbStore {
                 .open_table(READY_JOBS)
                 .context("open ready_jobs failed")?;
             let mut iter = ready.iter().context("iterate ready jobs failed")?;
-            match iter
-                .next()
+            iter.next()
                 .transpose()
                 .context("read ready iterator entry failed")?
-            {
-                Some((key, value)) => Some((key.value(), value.value().to_vec())),
-                None => None,
-            }
+                .map(|(key, value)| (key.value(), value.value().to_vec()))
         };
 
         let Some((seq, job_bytes)) = first else {
@@ -387,6 +383,19 @@ impl RedbStore {
         let receipt: Receipt =
             serde_json::from_slice(bytes.value()).context("deserialize receipt failed")?;
         Ok(Some(receipt))
+    }
+
+    pub fn list_receipts(&self) -> Result<Vec<Receipt>> {
+        let read = self.db.begin_read().context("begin read tx failed")?;
+        let table = read.open_table(RECEIPTS).context("open receipts failed")?;
+        let mut out = Vec::new();
+        for row in table.iter().context("iterate receipts failed")? {
+            let (_, value) = row.context("read receipt row failed")?;
+            let receipt: Receipt =
+                serde_json::from_slice(value.value()).context("deserialize receipt failed")?;
+            out.push(receipt);
+        }
+        Ok(out)
     }
 
     pub fn increment_status_counter(&self, status: WorkStatus) -> Result<()> {
