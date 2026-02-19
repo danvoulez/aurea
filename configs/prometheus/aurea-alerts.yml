@@ -1,0 +1,33 @@
+groups:
+  - name: aurea-slo-mvp
+    interval: 30s
+    rules:
+      - alert: AureaTTFTP95High
+        expr: histogram_quantile(0.95, sum(rate(ttft_ms_bucket[15m])) by (le)) > 4000
+        for: 15m
+        labels:
+          severity: warning
+          service: aurea
+        annotations:
+          summary: "AUREA TTFT p95 acima de 4s"
+          description: "TTFT p95 ficou acima de 4s por 15 minutos no serviço AUREA."
+
+      - alert: AureaTTRP95High
+        expr: histogram_quantile(0.95, sum(rate(ttr_ms_bucket[15m])) by (le)) > 9000
+        for: 15m
+        labels:
+          severity: warning
+          service: aurea
+        annotations:
+          summary: "AUREA TTR p95 acima de 9s"
+          description: "TTR p95 ficou acima de 9s por 15 minutos no serviço AUREA."
+
+      - alert: AureaErrorRateHigh
+        expr: max_over_time(error_rate{code="runtime_fail"}[10m]) > 0.02
+        for: 10m
+        labels:
+          severity: critical
+          service: aurea
+        annotations:
+          summary: "AUREA error_rate acima de 2%"
+          description: "A taxa de erro ultrapassou 2% por 10 minutos no serviço AUREA."
