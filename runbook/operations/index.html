@@ -153,6 +153,10 @@
 <ul>
 <li>Start: <code>aurea serve --db ./aurea.redb --listen 0.0.0.0:8080</code></li>
 <li>Keys: <code>aurea keys rotate</code></li>
+<li>Leases expirados: <code>aurea runtime sweep --expired --db ./aurea.redb</code></li>
+<li>Rebuild de âncora diária: <code>aurea anchors rebuild --db ./aurea.redb --date YYYY-MM-DD --out-dir ./anchors</code></li>
+<li>Retenção (dry-run): <code>aurea retention receipts --db ./aurea.redb --older-than-days 30</code></li>
+<li>Retenção (apply): <code>aurea retention receipts --db ./aurea.redb --older-than-days 30 --apply</code></li>
 <li>Backups: snapshots de redb + exports Parquet</li>
 </ul>
 <h2 id="supervisor-pmdaemon">Supervisor (PMDaemon)</h2>

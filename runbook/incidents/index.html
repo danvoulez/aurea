@@ -155,7 +155,7 @@
 <h2 id="1-jobs-presos-reassign-em-massa">1) Jobs presos / Reassign em massa</h2>
 <ol>
 <li>Verificar <code>queue_depth</code> e <code>reassigns_total</code> em /v1/metrics</li>
-<li>Forçar varredura de leases expirados (<code>aurea runtime sweep --expired</code>)</li>
+<li>Forçar varredura de leases expirados (<code>aurea runtime sweep --expired --db ./aurea.redb</code>)</li>
 <li>Confirmar retomada no stream SSE</li>
 </ol>
 <h2 id="2-assinatura-invalida-de-recibo">2) Assinatura inválida de recibo</h2>
@@ -166,12 +166,14 @@
 </ol>
 <h2 id="3-ancora-do-dia-ausentecorrompida">3) Âncora do dia ausente/corrompida</h2>
 <ol>
-<li>Rodar <code>aurea anchors rebuild --date YYYY-MM-DD</code></li>
+<li>Rodar <code>aurea anchors rebuild --db ./aurea.redb --date YYYY-MM-DD --out-dir ./anchors</code></li>
 <li>Publicar novo root; registrar incidente</li>
 </ol>
 <h2 id="4-gc-de-packs">4) GC de packs</h2>
 <ol>
-<li>Executar política de retenção (dry-run → apply)</li>
+<li>Executar política de retenção:
+   <code>aurea retention receipts --db ./aurea.redb --older-than-days 30</code>
+   <code>aurea retention receipts --db ./aurea.redb --older-than-days 30 --apply</code></li>
 <li>Rodar <code>verify()</code> em amostras e checar recibos impactados</li>
 </ol>
               
