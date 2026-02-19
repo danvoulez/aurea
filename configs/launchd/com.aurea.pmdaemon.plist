@@ -20,6 +20,12 @@
       <string>/var/lib/aurea/keys</string>
       <string>--logs-dir</string>
       <string>/var/log/aurea</string>
+      <string>--health-url</string>
+      <string>http://127.0.0.1:8080/healthz</string>
+      <string>--max-consecutive-health-failures</string>
+      <string>3</string>
+      <string>--health-interval-ms</string>
+      <string>1500</string>
     </array>
 
     <key>RunAtLoad</key>
