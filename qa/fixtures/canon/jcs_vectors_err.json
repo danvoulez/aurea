@@ -1,0 +1,14 @@
+[
+  {
+    "in": {
+      "x": "\\uD800"
+    },
+    "error": "SCHEMA_INVALID"
+  },
+  {
+    "in": {
+      "n": "NaN"
+    },
+    "error": "SCHEMA_INVALID"
+  }
+]

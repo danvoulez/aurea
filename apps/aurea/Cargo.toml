@@ -1,0 +1,29 @@
+[package]
+name = "aurea"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+async-stream.workspace = true
+axum.workspace = true
+base64.workspace = true
+chrono.workspace = true
+clap.workspace = true
+ed25519-dalek.workspace = true
+futures-core.workspace = true
+rand.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+
+aurea-core = { path = "../../crates/aurea-core" }
+aurea-plugins = { path = "../../crates/aurea-plugins" }
+aurea-runtime = { path = "../../crates/aurea-runtime" }
+aurea-storage = { path = "../../crates/aurea-storage" }

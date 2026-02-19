@@ -1,0 +1,39 @@
+[workspace]
+members = [
+  "apps/aurea",
+  "crates/aurea-core",
+  "crates/aurea-storage",
+  "crates/aurea-runtime",
+  "crates/aurea-artifacts-vcx-pack",
+  "crates/aurea-plugins",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+authors = ["AUREA"]
+rust-version = "1.85"
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+async-stream = "0.3"
+axum = { version = "0.8", features = ["json", "http1", "tokio"] }
+base64 = "0.22"
+blake3 = "1"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+clap = { version = "4", features = ["derive"] }
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+futures-core = "0.3"
+rand = "0.8"
+redb = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+uuid = { version = "1", features = ["v4", "serde"] }

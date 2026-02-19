@@ -5,6 +5,7 @@
 - E2E: fala→PlanCard→confirmar→stream→Recibo
 - Determinismo: KATs por domínio (ciência/HDL bit-a-bit; mídia com thresholds)
 - Chaos (staging): latência/falha seedada; SLOs mantidos
+- Canon JSON (baseline): rodar vetores em `qa/fixtures/canon/` para casos `ok`, `err`, `null_strip` e `num_norm`
 
 
 ## Usabilidade (guiado)
