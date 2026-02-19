@@ -158,6 +158,8 @@
 <li>Dataset raiz (<code>@id: "./"</code>) com <code>name</code>, <code>datePublished</code> e <code>hasPart</code></li>
 <li>Parte principal:</li>
 <li><code>receipts.json</code> com snapshot dos recibos exportados</li>
+<li>Se <code>receipt.artifacts[]</code> existir:</li>
+<li>adiciona nós <code>File</code> (<code>artifact-N</code>) com <code>identifier=cid:&lt;pack_cid&gt;</code> e <code>contentSize</code></li>
 <li>Metadado obrigatório:</li>
 <li><code>ro-crate-metadata.json</code> com <code>conformsTo: https://w3id.org/ro/crate/1.1</code></li>
 </ul>
