@@ -404,9 +404,11 @@ dependencies = [
  "blake3",
  "chrono",
  "ed25519-dalek",
+ "rand",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
+ "uuid",
 ]
 
 [[package]]
