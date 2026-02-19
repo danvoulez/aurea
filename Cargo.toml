@@ -6,6 +6,10 @@ members = [
   "crates/aurea-runtime",
   "crates/aurea-artifacts-vcx-pack",
   "crates/aurea-plugins",
+  "crates/aurea-policy",
+  "crates/aurea-receipts",
+  "crates/aurea-ui-web",
+  "crates/aurea-pmdaemon",
 ]
 resolver = "2"
 
@@ -25,6 +29,7 @@ base64 = "0.22"
 blake3 = "1"
 chrono = { version = "0.4", features = ["serde", "clock"] }
 clap = { version = "4", features = ["derive"] }
+data-encoding = "2"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 futures-core = "0.3"
 rand = "0.8"

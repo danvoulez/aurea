@@ -135,6 +135,8 @@ dependencies = [
  "async-stream",
  "aurea-core",
  "aurea-plugins",
+ "aurea-policy",
+ "aurea-receipts",
  "aurea-runtime",
  "aurea-storage",
  "axum",
@@ -168,6 +170,7 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "chrono",
+ "data-encoding",
  "serde",
  "serde_json",
  "thiserror",
@@ -182,6 +185,40 @@ dependencies = [
  "async-trait",
  "aurea-core",
  "serde_json",
+]
+
+[[package]]
+name = "aurea-pmdaemon"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "aurea-policy"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "aurea-receipts"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "aurea-core",
+ "base64",
+ "blake3",
+ "chrono",
+ "ed25519-dalek",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -215,6 +252,14 @@ dependencies = [
  "serde",
  "serde_json",
  "uuid",
+]
+
+[[package]]
+name = "aurea-ui-web"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -467,6 +512,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "data-encoding"
+version = "2.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 
 [[package]]
 name = "der"

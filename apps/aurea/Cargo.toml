@@ -25,5 +25,7 @@ uuid.workspace = true
 
 aurea-core = { path = "../../crates/aurea-core" }
 aurea-plugins = { path = "../../crates/aurea-plugins" }
+aurea-policy = { path = "../../crates/aurea-policy" }
+aurea-receipts = { path = "../../crates/aurea-receipts" }
 aurea-runtime = { path = "../../crates/aurea-runtime" }
 aurea-storage = { path = "../../crates/aurea-storage" }

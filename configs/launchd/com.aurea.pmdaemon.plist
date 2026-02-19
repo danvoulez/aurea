@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.aurea.pmdaemon</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/usr/local/bin/aurea-pmdaemon</string>
+      <string>--cmd</string>
+      <string>/usr/local/bin/aurea</string>
+      <string>--arg0</string>
+      <string>serve</string>
+      <string>--listen</string>
+      <string>0.0.0.0:8080</string>
+      <string>--db</string>
+      <string>/var/lib/aurea/aurea.redb</string>
+      <string>--keys-dir</string>
+      <string>/var/lib/aurea/keys</string>
+      <string>--logs-dir</string>
+      <string>/var/log/aurea</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/var/log/aurea/pmdaemon.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/var/log/aurea/pmdaemon.err.log</string>
+  </dict>
+</plist>
