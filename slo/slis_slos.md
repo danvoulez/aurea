@@ -8,6 +8,8 @@
 - ttft_ms_p95 > 4s por 15min → WARN
 - ttr_ms_p95 > 9s por 15min → WARN
 - error_rate > 2% por 10min → ALERT
+- Regras versionadas: `configs/prometheus/aurea-alerts.yml`
+- Validação local: `promtool check rules configs/prometheus/aurea-alerts.yml`
 
 ## Orçamentos por tenant (exemplo)
 - tokens_mês, tempo_cpu_ms_mês (rejeitar preview > orçamento)
